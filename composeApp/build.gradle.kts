@@ -119,8 +119,14 @@ kotlin {
         }
     }
 
-    rootProject.tasks.named("prepareKotlinBuildScriptModel") {
+    val syncTaskNames = setOf("prepareKotlinBuildScriptModel", "prepareKotlinIdeaImport")
+    tasks.matching { it.name in syncTaskNames }.all {
         dependsOn(generateBuildInfo)
+    }
+    targets.all {
+        compilations.all {
+            compileTaskProvider.configure { dependsOn(generateBuildInfo) }
+        }
     }
 }
 
