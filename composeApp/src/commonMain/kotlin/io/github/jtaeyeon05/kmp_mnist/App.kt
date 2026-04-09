@@ -13,13 +13,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
+import io.github.jtaeyeon05.kmp_mnist.ui.AppTheme
 
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        Surface {
+    AppTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+        ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
