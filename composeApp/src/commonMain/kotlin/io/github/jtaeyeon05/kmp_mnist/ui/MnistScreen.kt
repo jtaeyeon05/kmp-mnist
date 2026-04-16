@@ -4,10 +4,14 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,7 +35,7 @@ import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 fun MnistScreen() {
     LocalLayoutConstraints.current.run {
         val contentColor = LocalContentColor.current
-        val boxMap = rememberSaveable {
+        val cellMap = rememberSaveable {
             SnapshotStateList(20) {
                 SnapshotStateList(20) {
                     0f
@@ -39,6 +43,32 @@ fun MnistScreen() {
             }
         }
         var isBrushed by rememberSaveable { mutableStateOf(true) }
+
+        fun updateCell(x: Int, y: Int, delta: Float) {
+            if (x in 0 ..< 20 && y in 0 ..< 20) {
+                cellMap[x][y] = (cellMap[x][y] + 0.25f).coerceIn(0f .. 1f)
+            }
+        }
+
+        fun draw(x: Int, y: Int, isBrushed: Boolean = false) {
+            if (isBrushed) {
+                updateCell(x = x - 1, y = y, delta = 0.25f)
+                updateCell(x = x + 1, y = y, delta = 0.25f)
+                updateCell(x = x, y = y - 1, delta = 0.25f)
+                updateCell(x = x, y = y + 1, delta = 0.25f)
+                updateCell(x = x, y = y, delta = 0.5f)
+            } else {
+                updateCell(x = x, y = y, delta = 0.5f)
+            }
+        }
+
+        fun clear() {
+            for (x in 0 ..< 20) {
+                for (y in 0 ..< 20) {
+                    cellMap[x][y] = 0f
+                }
+            }
+        }
 
         // CellBoard
         Box(modifier = Modifier.fillMaxSize()) {
@@ -62,23 +92,24 @@ fun MnistScreen() {
                                 val touchPoint = change.position
                                 val x = (20f * touchPoint.x / size.width.toFloat()).toInt().coerceIn(0, 19)
                                 val y = (20f * touchPoint.y / size.height.toFloat()).toInt().coerceIn(0, 19)
-                                println("x: $x, y: $y")
 
                                 if (lastPoint != x to y) {
-                                    if (isBrushed) {
-                                        if (x - 1 in 0 ..< 20) boxMap[x - 1][y] = (boxMap[x - 1][y] + 0.25f).coerceAtMost(1f)
-                                        if (x + 1 in 0 ..< 20) boxMap[x + 1][y] = (boxMap[x + 1][y] + 0.25f).coerceAtMost(1f)
-                                        if (y - 1 in 0 ..< 20) boxMap[x][y - 1] = (boxMap[x][y - 1] + 0.25f).coerceAtMost(1f)
-                                        if (y + 1 in 0 ..< 20) boxMap[x][y + 1] = (boxMap[x][y + 1] + 0.25f).coerceAtMost(1f)
-                                        boxMap[x][y] = (boxMap[x][y] + 0.5f).coerceAtMost(1f)
-                                    } else {
-                                        boxMap[x][y] = (boxMap[x][y] + 0.5f).coerceAtMost(1f)
-                                    }
+                                    draw(x = x, y = y, isBrushed = isBrushed)
                                     lastPoint = x to y
                                 }
                             },
                             onDragCancel = { lastPoint = null },
                             onDragEnd = { lastPoint = null },
+                        )
+                    }
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { offset ->
+                                val x = (20f * offset.x / size.width.toFloat()).toInt().coerceIn(0, 19)
+                                val y = (20f * offset.y / size.height.toFloat()).toInt().coerceIn(0, 19)
+
+                                draw(x = x, y = y, isBrushed = isBrushed)
+                            },
                         )
                     }
             ) {
@@ -87,7 +118,7 @@ fun MnistScreen() {
                     for (y in 0 until 20) {
                         // Cell
                         drawRect(
-                            color = contentColor.copy(alpha = boxMap[x][y]),
+                            color = contentColor.copy(alpha = cellMap[x][y]),
                             topLeft = Offset(x * cellSize, y * cellSize),
                             size = Size(cellSize, cellSize)
                         )
@@ -125,11 +156,34 @@ fun MnistScreen() {
                 )
             }
 
+            // Toolbar
+            Column(
+                modifier = Modifier
+                    .padding(padding.small)
+                    .width(component.squareButton.width)
+                    .align(Alignment.TopStart),
+                verticalArrangement = Arrangement.spacedBy(padding.small),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                SquareButton(
+                    text = if (isBrushed) "✑" else "✎",
+                    onClick = { isBrushed = !isBrushed },
+                )
+                SquareButton(
+                    text = "⟲",
+                    onClick = { clear() },
+                )
+                SquareButton(
+                    text = "?",
+                    onClick = { /* TODO */ },
+                )
+            }
+
             // Version
             Text(
                 modifier = Modifier
                     .padding(padding.small)
-                    .align(Alignment.BottomEnd),
+                    .align(Alignment.TopEnd),
                 text = "${BuildInfo.RELEASE_NAME} [${BuildInfo.RELEASE_CODE}]\n${BuildInfo.BUILD_NUMBER}",
                 fontSize = typography.small.sp,
                 lineHeight = typography.small.sp,

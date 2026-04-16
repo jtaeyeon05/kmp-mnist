@@ -53,6 +53,7 @@ class LayoutConstraints private constructor(
         val cell: Dp,
         val cellBoard: Dp,
         val outputBoard: DpSize,
+        val squareButton: DpSize,
     )
 
     class TypographySize(
@@ -165,7 +166,12 @@ class LayoutConstraints private constructor(
                     cell = cell,
                     cellBoard = cellBoard,
                     outputBoard = outputBoard,
+                    squareButton = DpSize(
+                        width = base * 0.08f,
+                        height = base * 0.08f,
+                    ),
                 )
+
             }
 
             return LayoutConstraints(
