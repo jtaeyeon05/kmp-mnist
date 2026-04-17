@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.0.4"
-val releaseCode = 5
+val releaseName = "1.0.5"
+val releaseCode = 6
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")
@@ -113,6 +113,9 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation("sk.ainet.core:skainet-lang-core:0.18.0")
+            implementation("sk.ainet.core:skainet-backend-cpu:0.18.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

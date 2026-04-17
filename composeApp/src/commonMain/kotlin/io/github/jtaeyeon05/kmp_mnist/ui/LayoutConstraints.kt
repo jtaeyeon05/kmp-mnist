@@ -56,7 +56,7 @@ class LayoutConstraints private constructor(
         val squareButton: DpSize,
     )
 
-    class TypographySize(
+    data class TypographySize(
         val size: Dp,
         val lineHeight: Float,
         private val density: Density,
@@ -65,6 +65,42 @@ class LayoutConstraints private constructor(
         val sp: TextUnit get() = with(density) { dp.toSp() }
         val lineDp: Dp get() = size * lineHeight
         val lineSp: TextUnit get() = with(density) { lineDp.toSp() }
+
+
+        operator fun unaryPlus() = this
+        operator fun unaryMinus() = this * -1f
+
+        operator fun plus(other: TypographySize) = TypographySize(
+            size = this.size + other.size,
+            lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
+            density = this.density,
+        )
+
+        operator fun minus(other: TypographySize) = TypographySize(
+            size = this.size - other.size,
+            lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
+            density = this.density,
+        )
+
+        operator fun times(scale: Number) = TypographySize(
+            size = this.size * scale.toFloat(),
+            lineHeight = this.lineHeight,
+            density = this.density,
+        )
+
+        operator fun div(scale: Number) = TypographySize(
+            size = this.size / scale.toFloat(),
+            lineHeight = this.lineHeight,
+            density = this.density,
+        )
+
+        companion object {
+            operator fun Number.times(typographySize: TypographySize) = TypographySize(
+                size = this.toFloat() * typographySize.size,
+                lineHeight = typographySize.lineHeight,
+                density = typographySize.density,
+            )
+        }
     }
 
     companion object {
