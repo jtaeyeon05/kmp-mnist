@@ -1,0 +1,5 @@
+# Code
+.venv/
+data/
+model/
+test.py

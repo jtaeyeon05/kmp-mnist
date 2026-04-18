@@ -43,6 +43,28 @@ local.properties
 output.json
 !gradle/wrapper/gradle-wrapper.jar
 
+# Python
+.venv/
+.eggs/
+.cache/
+venv/
+env/
+ENV/
+dist/
+__pycache__/
+.pytest_cache/
+htmlcov/
+*.egg-info/
+.env
+.env.*
+.coverage
+.coverage.*
+.ipynb_checkpoi
+nosetests.xml
+coverage.xml
+*.py[cod]
+*$py.class
+
 # Node.js
 node_modules/
 
