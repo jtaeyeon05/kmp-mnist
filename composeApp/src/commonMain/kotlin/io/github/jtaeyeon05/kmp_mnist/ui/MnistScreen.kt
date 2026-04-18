@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.test
@@ -43,7 +45,7 @@ fun MnistScreen() {
                 }
             }
         }
-        var isBrushed by rememberSaveable { mutableStateOf(true) }
+        var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
         var testOutput by rememberSaveable { mutableStateOf("Output") }
 
         fun updateCell(x: Int, y: Int, delta: Float) {
@@ -52,15 +54,33 @@ fun MnistScreen() {
             }
         }
 
-        fun draw(x: Int, y: Int, isBrushed: Boolean = false) {
-            if (isBrushed) {
-                updateCell(x = x - 1, y = y, delta = 0.5f)
-                updateCell(x = x + 1, y = y, delta = 0.5f)
-                updateCell(x = x, y = y - 1, delta = 0.5f)
-                updateCell(x = x, y = y + 1, delta = 0.5f)
-                updateCell(x = x, y = y, delta = 1.0f)
-            } else {
-                updateCell(x = x, y = y, delta = 1.0f)
+        fun draw(x: Int, y: Int, brushMode: Int = 0) {
+            when (brushMode) {
+                0 -> {
+                    updateCell(x = x, y = y, delta = 1.0f)
+                }
+                1 -> {
+                    updateCell(x = x, y = y, delta = 1.0f)
+                    updateCell(x = x - 1, y = y, delta = 0.5f)
+                    updateCell(x = x + 1, y = y, delta = 0.5f)
+                    updateCell(x = x, y = y - 1, delta = 0.5f)
+                    updateCell(x = x, y = y + 1, delta = 0.5f)
+                }
+                2 -> {
+                    updateCell(x, y, 1.00f)
+                    updateCell(x - 1, y, 0.75f)
+                    updateCell(x + 1, y, 0.75f)
+                    updateCell(x, y - 1, 0.75f)
+                    updateCell(x, y + 1, 0.75f)
+                    updateCell(x - 1, y - 1, 0.50f)
+                    updateCell(x + 1, y - 1, 0.50f)
+                    updateCell(x - 1, y + 1, 0.50f)
+                    updateCell(x + 1, y + 1, 0.50f)
+                    updateCell(x - 2, y, 0.25f)
+                    updateCell(x + 2, y, 0.25f)
+                    updateCell(x, y - 2, 0.25f)
+                    updateCell(x, y + 2, 0.25f)
+                }
             }
         }
 
@@ -81,27 +101,17 @@ fun MnistScreen() {
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(
                 modifier = Modifier
-                    .padding(padding.large)
-                    .size(component.cellBoard)
-                    .background(
-                        color = MaterialTheme.colorScheme.background
-                    )
-                    .border(
-                        width = border.medium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    .align(Alignment.Center)
                     .pointerInput(Unit) {
                         var lastPoint: Pair<Int, Int>? = null
 
                         detectDragGestures(
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
-                                val x = (20f * touchPoint.x / size.width.toFloat()).toInt().coerceIn(0, 19)
-                                val y = (20f * touchPoint.y / size.height.toFloat()).toInt().coerceIn(0, 19)
+                                val x = (20f * (touchPoint.x - padding.large.toPx()) / (size.width - 2 * padding.large.toPx())).toInt()
+                                val y = (20f * (touchPoint.y - padding.large.toPx()) / (size.height - 2 * padding.large.toPx())).toInt()
 
                                 if (lastPoint != x to y) {
-                                    draw(x = x, y = y, isBrushed = isBrushed)
+                                    draw(x = x, y = y, brushMode = brushMode)
                                     test()
                                     lastPoint = x to y
                                 }
@@ -113,14 +123,24 @@ fun MnistScreen() {
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = { offset ->
-                                val x = (20f * offset.x / size.width.toFloat()).toInt().coerceIn(0, 19)
-                                val y = (20f * offset.y / size.height.toFloat()).toInt().coerceIn(0, 19)
+                                val x = (20f * (offset.x - padding.large.toPx())  / (size.width - 2 * padding.large.toPx())).toInt()
+                                val y = (20f * (offset.y - padding.large.toPx()) / (size.height - 2 * padding.large.toPx())).toInt()
 
-                                draw(x = x, y = y, isBrushed = isBrushed)
+                                draw(x = x, y = y, brushMode = brushMode)
                                 test()
                             },
                         )
                     }
+                    .padding(padding.large)
+                    .size(component.cellBoard)
+                    .background(
+                        color = MaterialTheme.colorScheme.background
+                    )
+                    .border(
+                        width = border.medium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                    .align(Alignment.Center)
             ) {
                 val cellSize = component.cell.toPx()
                 for (y in 0 until 20) {
@@ -175,8 +195,22 @@ fun MnistScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 SquareButton(
-                    text = if (isBrushed) "✑" else "✎",
-                    onClick = { isBrushed = !isBrushed },
+                    text = when (brushMode) {
+                        0 -> "✎"
+                        1 -> "✑"
+                        else -> "✑"
+                    },
+                    style = LocalTextStyle.current.copy(
+                        fontWeight = when (brushMode) {
+                            0 -> FontWeight.Normal
+                            1 -> FontWeight.Normal
+                            else -> FontWeight.Bold
+                        },
+                    ),
+                    onClick = {
+                        brushMode += 1
+                        if (brushMode > 2) brushMode = 0
+                    },
                 )
                 SquareButton(
                     text = "⟲",

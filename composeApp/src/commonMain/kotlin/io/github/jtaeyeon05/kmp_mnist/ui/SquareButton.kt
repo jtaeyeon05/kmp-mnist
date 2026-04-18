@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.times
 fun SquareButton(
     modifier: Modifier = Modifier,
     text: String,
+    style: TextStyle = LocalTextStyle.current,
     onClick: () -> Unit,
 ) {
     LocalLayoutConstraints.current.run {
@@ -45,7 +47,7 @@ fun SquareButton(
             Text(
                 modifier = Modifier.padding(start = 0.1f * typography.medium.dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
                 text = text,
-                style = LocalTextStyle.current.copy(
+                style = style.copy(
                     fontSize = typography.medium.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = typography.medium.lineSp,
