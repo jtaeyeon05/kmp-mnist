@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as F
 
 import config
 
@@ -35,4 +34,4 @@ class MnistCNN(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        return F.log_softmax(x, dim=1)
+        return x

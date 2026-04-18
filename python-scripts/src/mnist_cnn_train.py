@@ -8,9 +8,9 @@ from typing import Optional, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import torch.optim as optim
 import torch.nn.functional as F
 from loguru import logger
+from torch import nn, optim
 from torchvision import datasets, transforms
 
 import config
@@ -131,6 +131,7 @@ logger.info("Starting Training...")
 
 # 모델, 옵티마이저, 스케줄려 로드
 model = mnist_cnn.MnistCNN().to(device)
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=config.SCHEDULER_STEP_SIZE, gamma=config.SCHEDULER_GAMMA)
 logger.debug("Loaded Model, Optimizer, and Scheduler")
@@ -142,7 +143,7 @@ def train(now_epoch: int):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
+        loss = criterion(output, target)
         loss.backward()
         optimizer.step()
         if batch_idx % 200 == 0:
@@ -158,7 +159,7 @@ def test(now_epoch: Optional[int] = None) -> Tuple[float, int, int]:
         for data, target in mnist_test_dataloader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
     test_loss /= total

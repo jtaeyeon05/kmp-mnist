@@ -83,6 +83,7 @@ logger.info("Starting Test...")
 
 # 모델 로드
 model = mnist_cnn.MnistCNN().to(device)
+criterion = nn.CrossEntropyLoss()
 
 model_path = config.LOADED_MODEL_PATH
 if model_path is None:
@@ -112,7 +113,7 @@ with torch.no_grad():
     for data, target in mnist_test_dataloader:
         data, target = data.to(device), target.to(device)
         output = model(data)
-        test_loss += F.nll_loss(output, target, reduction='sum').item()
+        test_loss += F.cross_entropy(output, target, reduction='sum').item()
         pred = output.argmax(dim=1, keepdim=True)
         correct += pred.eq(target.view_as(pred)).sum().item()
 test_loss /= total
