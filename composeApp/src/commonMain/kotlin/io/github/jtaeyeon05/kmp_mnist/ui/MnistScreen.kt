@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
+import io.github.jtaeyeon05.kmp_mnist.test
 
 
 @Composable
@@ -43,31 +44,37 @@ fun MnistScreen() {
             }
         }
         var isBrushed by rememberSaveable { mutableStateOf(true) }
+        var testOutput by rememberSaveable { mutableStateOf("Output") }
 
         fun updateCell(x: Int, y: Int, delta: Float) {
             if (x in 0 ..< 20 && y in 0 ..< 20) {
-                cellMap[x][y] = (cellMap[x][y] + 0.25f).coerceIn(0f .. 1f)
+                cellMap[y][x] = (cellMap[y][x] + delta).coerceIn(0f .. 1f)
             }
         }
 
         fun draw(x: Int, y: Int, isBrushed: Boolean = false) {
             if (isBrushed) {
-                updateCell(x = x - 1, y = y, delta = 0.25f)
-                updateCell(x = x + 1, y = y, delta = 0.25f)
-                updateCell(x = x, y = y - 1, delta = 0.25f)
-                updateCell(x = x, y = y + 1, delta = 0.25f)
-                updateCell(x = x, y = y, delta = 0.5f)
+                updateCell(x = x - 1, y = y, delta = 0.5f)
+                updateCell(x = x + 1, y = y, delta = 0.5f)
+                updateCell(x = x, y = y - 1, delta = 0.5f)
+                updateCell(x = x, y = y + 1, delta = 0.5f)
+                updateCell(x = x, y = y, delta = 1.0f)
             } else {
-                updateCell(x = x, y = y, delta = 0.5f)
+                updateCell(x = x, y = y, delta = 1.0f)
             }
         }
 
         fun clear() {
-            for (x in 0 ..< 20) {
-                for (y in 0 ..< 20) {
-                    cellMap[x][y] = 0f
+            for (y in 0 ..< 20) {
+                for (x in 0 ..< 20) {
+                    cellMap[y][x] = 0f
                 }
             }
+        }
+
+        // TODO
+        fun test() {
+            testOutput = test(cellMap.map { it.toList() })
         }
 
         // CellBoard
@@ -95,6 +102,7 @@ fun MnistScreen() {
 
                                 if (lastPoint != x to y) {
                                     draw(x = x, y = y, isBrushed = isBrushed)
+                                    test()
                                     lastPoint = x to y
                                 }
                             },
@@ -109,16 +117,17 @@ fun MnistScreen() {
                                 val y = (20f * offset.y / size.height.toFloat()).toInt().coerceIn(0, 19)
 
                                 draw(x = x, y = y, isBrushed = isBrushed)
+                                test()
                             },
                         )
                     }
             ) {
                 val cellSize = component.cell.toPx()
-                for (x in 0 until 20) {
-                    for (y in 0 until 20) {
+                for (y in 0 until 20) {
+                    for (x in 0 until 20) {
                         // Cell
                         drawRect(
-                            color = contentColor.copy(alpha = cellMap[x][y]),
+                            color = contentColor.copy(alpha = cellMap[y][x]),
                             topLeft = Offset(x * cellSize, y * cellSize),
                             size = Size(cellSize, cellSize)
                         )
@@ -149,9 +158,9 @@ fun MnistScreen() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "OutputBoard",
-                    fontSize = typography.medium.sp,
-                    lineHeight = typography.medium.sp,
+                    text = testOutput,
+                    fontSize = typography.small.sp,
+                    lineHeight = typography.small.sp,
                     textAlign = TextAlign.Center,
                 )
             }
