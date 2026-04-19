@@ -2,8 +2,10 @@ import os
 import random
 import sys
 
+import gguf
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from loguru import logger
 from torchvision import datasets, transforms
@@ -91,7 +93,8 @@ if model_path is None:
     model_filenames = [
         filename
         for filename in all_filenames
-        if filename.endswith(".pth") and "cnn" in filename.lower()
+        if "cnn" in filename.lower() and \
+           (filename.endswith(".pth") and not config.LOAD_MODEL_GGUF or filename.endswith(".gguf") and config.LOAD_MODEL_GGUF)
     ]
     if not model_filenames:
         model_path = None
@@ -100,8 +103,33 @@ if model_path is None:
     else:
         model_filenames.sort(key=lambda filename: os.path.getmtime(f"{config.MODEL_PATH}/{filename}"))
         model_path = f"{config.MODEL_PATH}/{model_filenames[-1]}"
-        logger.debug(f"Auto-selected Model (Path: {model_path})")
-model.load_state_dict(torch.load(model_path))
+        logger.debug(f"Auto-selected Model (Path: {os.path.abspath(model_path)})")
+
+if model_path.endswith(".pth"):
+    model.load_state_dict(torch.load(model_path))
+else:
+    logger.debug(f"[Load-GGUF] Start Loading the Model")
+
+    gguf_reader = gguf.GGUFReader(path=model_path)
+
+    state_dict = model.state_dict()
+    new_state_dict = {}
+
+    for tensor in gguf_reader.tensors:
+        name = tensor.name
+        data = torch.from_numpy(tensor.data.copy())
+
+        if name in state_dict:
+            if data.shape == state_dict[name].shape:
+                new_state_dict[name] = data
+                logger.trace(f"[Load-GGUF] Loaded {name} from the Reader ({data.shape})")
+            else:
+                logger.warning(f"[Load-GGUF] Failed to Load {name} from the Reader (File: {data.shape}, Model: {state_dict[name].shape})")
+        else:
+            logger.warning(f"[Load-GGUF] Failed to Load {name} from the Reader (Couldn't Find {name} from the Model)")
+
+    model.load_state_dict(new_state_dict, strict=False)
+    logger.debug(f"[Load-GGUF] Finished Loading the Model")
 
 # 테스트
 model.eval()

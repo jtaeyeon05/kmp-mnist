@@ -1,3 +1,4 @@
+import copy
 import os
 import random
 import sys
@@ -5,6 +6,7 @@ import time
 from datetime import datetime
 from typing import Optional, Tuple
 
+import gguf
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -207,8 +209,41 @@ if config.SHOW_TRAINING_RESULT:
     plt.show()
 logger.debug("Finished Training")
 
+
+# ========================================
 # 모델 저장
+# ========================================
+model_saved = copy.deepcopy(model)
+model_saved.to("cpu")
+model_saved.eval()  # Dropout 무시 등을 위함
+
 time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-model_filename = f"MnistCNN_{time_stamp}.pth"
-torch.save(model.state_dict(), f"{config.MODEL_PATH}/{model_filename}")
-logger.debug(f"Saved Model (Path: {os.path.abspath(f"{config.MODEL_PATH}/{model_filename}")})")
+model_filename = f"MnistCNN_{time_stamp}"
+
+# PTH 모델 저장
+if config.SAVE_MODEL_PTH:
+    logger.debug(f"[Save-PTH] Start Saving the Model")
+    torch.save(model.state_dict(), f"{config.MODEL_PATH}/{model_filename}.pth")
+    logger.debug(f"[Save-PTH] Saved the Model (Path: {os.path.abspath(f"{config.MODEL_PATH}/{model_filename}.pth")})")
+
+# GGUF 모델 저장
+if config.SAVE_MODEL_GGUF:
+    logger.debug(f"[Save-GGUF] Start Saving the Model")
+
+    gguf_writer = gguf.GGUFWriter(
+        path=f"{config.MODEL_PATH}/{model_filename}.gguf",
+        arch="mnst-cnn",
+    )
+
+    state_dict = model_saved.state_dict()
+    for name, tensor in state_dict.items():
+        data = tensor.numpy()
+        gguf_writer.add_tensor(name, data)
+        logger.trace(f"[Save-GGUF] Added {name} to the Writer ({data.shape})")
+
+    gguf_writer.write_header_to_file()
+    gguf_writer.write_kv_data_to_file()
+    gguf_writer.write_tensors_to_file()
+    gguf_writer.close()
+
+    logger.debug(f"[Save-GGUF] Saved the Model (Path: {os.path.abspath(f"{config.MODEL_PATH}/{model_filename}.gguf")})")

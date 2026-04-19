@@ -2,6 +2,9 @@
 SHOW_MNIST_SAMPLE = True
 SHOW_TRAINING_RESULT = True
 MUST_DOWNLOAD_DATASET = False
+SAVE_MODEL_PTH = True
+SAVE_MODEL_GGUF = True
+LOAD_MODEL_GGUF = False  # False -> .pth, True -> .gguf (auto-select)
 MODEL_PATH = "../model"
 LOADED_MODEL_PATH = None  # Optional[str]
 MNIST_DATASET_PATH = "../data/MNIST_data"
