@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.test
 
@@ -107,8 +108,9 @@ fun MnistScreen() {
                         detectDragGestures(
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
-                                val x = (20f * (touchPoint.x - padding.large.toPx()) / (size.width - 2 * padding.large.toPx())).toInt()
-                                val y = (20f * (touchPoint.y - padding.large.toPx()) / (size.height - 2 * padding.large.toPx())).toInt()
+                                val paddingPx = padding.large.toPx() + border.medium.toPx()
+                                val x = (20f * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
+                                val y = (20f * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
                                 if (lastPoint != x to y) {
                                     draw(x = x, y = y, brushMode = brushMode)
@@ -123,12 +125,14 @@ fun MnistScreen() {
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = { offset ->
-                                val x = (20f * (offset.x - padding.large.toPx())  / (size.width - 2 * padding.large.toPx())).toInt()
-                                val y = (20f * (offset.y - padding.large.toPx()) / (size.height - 2 * padding.large.toPx())).toInt()
+                                val paddingPx = padding.large.toPx() + border.medium.toPx()
+                                val x = (20f * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
+                                val y = (20f * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
                                 draw(x = x, y = y, brushMode = brushMode)
                                 test()
                             },
+                            // TODO
                         )
                     }
                     .padding(padding.large)
@@ -140,9 +144,10 @@ fun MnistScreen() {
                         width = border.medium,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
+                    .padding(border.medium)
                     .align(Alignment.Center)
             ) {
-                val cellSize = component.cell.toPx()
+                val cellSize = 0.05f * (component.cellBoard - 2 * border.medium).toPx()
                 for (y in 0 until 20) {
                     for (x in 0 until 20) {
                         // Cell

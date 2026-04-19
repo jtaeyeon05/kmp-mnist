@@ -50,7 +50,6 @@ class LayoutConstraints private constructor(
     )
 
     data class Component(
-        val cell: Dp,
         val cellBoard: Dp,
         val outputBoard: DpSize,
         val squareButton: DpSize,
@@ -158,14 +157,12 @@ class LayoutConstraints private constructor(
                 val availableWidth = screen.width - 2 * padding.large
                 val availableHeight = screen.height - 2 * padding.large
 
-                val cell: Dp
                 val cellBoard: Dp
                 val outputBoard: DpSize
 
                 if (screen.isVertical) {
                     if (availableWidth <= availableHeight - 2 * (0.2f * availableHeight + padding.medium)) {
                         cellBoard = availableWidth
-                        cell = cellBoard * 0.05f
                         outputBoard = DpSize(
                             width = cellBoard,
                             height = 0.5f * (availableHeight - cellBoard) - padding.medium,
@@ -173,7 +170,6 @@ class LayoutConstraints private constructor(
                     } else {
                         val outputBoardHeight = 0.2f * availableHeight
                         cellBoard = availableHeight - 2 * (0.2f * availableHeight + padding.medium)
-                        cell = cellBoard * 0.05f
                         outputBoard = DpSize(
                             width = cellBoard,
                             height = outputBoardHeight,
@@ -182,7 +178,6 @@ class LayoutConstraints private constructor(
                 } else {
                     if (availableHeight <= availableWidth - 2 * (0.2f * availableWidth + padding.medium)) {
                         cellBoard = availableHeight
-                        cell = cellBoard * 0.05f
                         outputBoard = DpSize(
                             width = 0.5f * (availableWidth - cellBoard) - padding.medium,
                             height = cellBoard,
@@ -190,7 +185,6 @@ class LayoutConstraints private constructor(
                     } else {
                         val outputBoardWidth = 0.2f * availableWidth
                         cellBoard = availableWidth - 2 * (0.2f * availableWidth + padding.medium)
-                        cell = cellBoard * 0.05f
                         outputBoard = DpSize(
                             width = outputBoardWidth,
                             height = cellBoard,
@@ -199,7 +193,6 @@ class LayoutConstraints private constructor(
                 }
 
                 Component(
-                    cell = cell,
                     cellBoard = cellBoard,
                     outputBoard = outputBoard,
                     squareButton = DpSize(
