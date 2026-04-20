@@ -1,22 +1,26 @@
+import torch
+
+
 # 설정값
 SHOW_MNIST_SAMPLE = True
 SHOW_TRAINING_RESULT = True
 MUST_DOWNLOAD_DATASET = False
 SAVE_MODEL_PTH = True
 SAVE_MODEL_GGUF = True
-LOAD_MODEL_GGUF = False  # False -> .pth, True -> .gguf (auto-select)
+LOAD_MODEL_GGUF = True  # False -> .pth, True -> .gguf (auto-select)
 MODEL_PATH = "../model"
 LOADED_MODEL_PATH = None  # Optional[str]
 MNIST_DATASET_PATH = "../data/MNIST_data"
 
 # 학습 하이퍼파라미터
+DTYPE = torch.float32
 IMG_ROWS = 28
 IMG_COLS = 28
 NUM_CLASSES = 10
 RANDOM_STATE = 2026
 
 NUM_EPOCHS = 15
-DROP_OUT_RATE = 0.30
+DROP_OUT_RATE = 0.25
 LEARNING_RATE = 0.001
 SCHEDULER_STEP_SIZE = 3
 SCHEDULER_GAMMA = 0.5

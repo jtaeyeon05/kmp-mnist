@@ -32,14 +32,11 @@ logger.info("Initializing Training Environment...")
 # noinspection PyArgumentList
 if torch.cuda.is_available():
     device = "cuda"
-    dtype = torch.float16
 elif torch.backends.mps.is_available():
     device = "mps"
-    dtype = torch.float16
 else:
     device = "cpu"
-    dtype = torch.float32
-logger.debug(f"Selected the Device (Device: {device}, DType: {dtype})")
+logger.debug(f"Selected the Device (Device: {device})")
 
 # 랜덤 스테이트 적용
 random.seed(config.RANDOM_STATE)
@@ -132,7 +129,7 @@ logger.debug(f"Loaded MNIST Dataset (Train: {len(mnist_train_dataset)}, Test: {l
 logger.info("Starting Training...")
 
 # 모델, 옵티마이저, 스케줄려 로드
-model = mnist_cnn.MnistCNN().to(device)
+model = mnist_cnn.MnistCNN().to(device=device, dtype=config.DTYPE)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=config.SCHEDULER_STEP_SIZE, gamma=config.SCHEDULER_GAMMA)
@@ -142,7 +139,8 @@ logger.debug("Loaded Model, Optimizer, and Scheduler")
 def train(now_epoch: int):
     model.train()
     for batch_idx, (data, target) in enumerate(mnist_train_dataloader):
-        data, target = data.to(device), target.to(device)
+        data = data.to(device=device, dtype=config.DTYPE)
+        target = target.to(device=device)
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
@@ -159,7 +157,8 @@ def test(now_epoch: Optional[int] = None) -> Tuple[float, int, int]:
 
     with torch.no_grad():
         for data, target in mnist_test_dataloader:
-            data, target = data.to(device), target.to(device)
+            data = data.to(device=device, dtype=config.DTYPE)
+            target = target.to(device=device)
             output = model(data)
             test_loss += F.cross_entropy(output, target, reduction='sum').item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -237,7 +236,7 @@ if config.SAVE_MODEL_GGUF:
 
     state_dict = model_saved.state_dict()
     for name, tensor in state_dict.items():
-        data = tensor.numpy()
+        data = tensor.to(device="cpu", dtype=config.DTYPE).numpy()
         gguf_writer.add_tensor(name, data)
         logger.trace(f"[Save-GGUF] Added {name} to the Writer ({data.shape})")
 
