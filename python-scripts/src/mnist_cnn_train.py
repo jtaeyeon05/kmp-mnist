@@ -54,12 +54,8 @@ elif device == "mps":
 mnist_train_transform = transforms.Compose([
     transforms.RandomRotation(10),
     transforms.ToTensor(),
-    transforms.Normalize(mean=(0.1307,), std=(0.3081,))
 ])
-mnist_test_transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.1307,), std=(0.3081,))
-])
+mnist_test_transform = transforms.ToTensor()
 
 should_download = (
         not os.path.exists(config.MNIST_DATASET_PATH) or

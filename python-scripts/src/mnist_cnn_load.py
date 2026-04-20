@@ -53,10 +53,7 @@ should_download = (
 )
 if should_download:
     logger.debug(f"Starting Download...")
-mnist_transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.1307,), std=(0.3081,))
-])
+mnist_transform = transforms.ToTensor()
 mnist_test_dataset = datasets.MNIST(
     root=config.MNIST_DATASET_PATH,
     train=False,

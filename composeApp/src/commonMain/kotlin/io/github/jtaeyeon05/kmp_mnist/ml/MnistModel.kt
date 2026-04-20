@@ -16,6 +16,7 @@ import sk.ainet.lang.tensor.flatten
 import sk.ainet.lang.tensor.matmul
 import sk.ainet.lang.tensor.plus
 import sk.ainet.lang.tensor.relu
+import sk.ainet.lang.tensor.t
 import sk.ainet.lang.types.FP32
 
 
@@ -135,10 +136,10 @@ suspend fun model(): Module<FP32, Float> {
                     }
 
                     baseContext.fromFloatArray<FP32, Float>(
-                        shape = Shape(1568, 256),
+                        shape = Shape(256, 1568),
                         dtype = FP32::class,
                         data = array
-                    )
+                    ).t()
                 }
                 val bias = run {
                     val readerTensor = tensorMap["layer3.fc3_1.bias"] ?: throw IllegalArgumentException("Cannot Find layer3.fc3_1.bias")
@@ -147,10 +148,10 @@ suspend fun model(): Module<FP32, Float> {
                     }
 
                     baseContext.fromFloatArray<FP32, Float>(
-                        shape = Shape(256),
+                        shape = Shape(256, 1),
                         dtype = FP32::class,
                         data = array
-                    )
+                    ).t()
                 }
                 it.matmul(weights) + bias
             }
@@ -163,10 +164,10 @@ suspend fun model(): Module<FP32, Float> {
                     }
 
                     baseContext.fromFloatArray<FP32, Float>(
-                        shape = Shape(256, 10),
+                        shape = Shape(10, 256),
                         dtype = FP32::class,
                         data = array
-                    )
+                    ).t()
                 }
                 val bias = run {
                     val readerTensor = tensorMap["layer3.fc3_2.bias"] ?: throw IllegalArgumentException("Cannot Find layer3.fc3_2.bias")
@@ -175,10 +176,10 @@ suspend fun model(): Module<FP32, Float> {
                     }
 
                     baseContext.fromFloatArray<FP32, Float>(
-                        shape = Shape(10),
+                        shape = Shape(10, 1),
                         dtype = FP32::class,
                         data = array
-                    )
+                    ).t()
                 }
                 it.matmul(weights) + bias
             }
@@ -186,16 +187,19 @@ suspend fun model(): Module<FP32, Float> {
     }
 }
 
+suspend fun initializeModel() = withContext(Dispatchers.Default) {
+    model = model()
+}
+
 suspend fun predict(
     input: Tensor<FP32, Float>
 ): Tensor<FP32, Float>? = withContext(Dispatchers.Default) {
-    if (model == null) model = model()
+    if (model == null) return@withContext null
 
     model!!.zeroGrad()
     val output = model!!.forward(
         input = input,
         ctx = evalContext
     )
-
     output
 }

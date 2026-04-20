@@ -17,6 +17,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.ml.argmax
+import io.github.jtaeyeon05.kmp_mnist.ml.initializeModel
 import io.github.jtaeyeon05.kmp_mnist.ml.predict
 import io.github.jtaeyeon05.kmp_mnist.ml.softmax
 import io.github.jtaeyeon05.kmp_mnist.ml.toMnistInputTensor
@@ -43,7 +45,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sk.ainet.lang.tensor.Tensor
 import sk.ainet.lang.tensor.pprint
-import sk.ainet.lang.tensor.softmax
 import sk.ainet.lang.types.FP32
 import kotlin.math.roundToInt
 
@@ -54,9 +55,10 @@ fun MnistScreen() {
         val predictScope = rememberCoroutineScope()
         val contentColor = LocalContentColor.current
 
-        val cellMap = rememberSaveable {
-            SnapshotStateList(20) {
-                SnapshotStateList(20) {
+        val cellSize by rememberSaveable { mutableStateOf(20) }
+        val cellMap = rememberSaveable(cellSize) {
+            SnapshotStateList(cellSize) {
+                SnapshotStateList(cellSize) {
                     0f
                 }
             }
@@ -64,9 +66,17 @@ fun MnistScreen() {
         var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
         var prediction by remember { mutableStateOf<Tensor<FP32, Float>?>(null) }
         var predictJob by remember { mutableStateOf<Job?>(null) }
+        var isModelLoaded by rememberSaveable { mutableStateOf(false) }
+
+        fun predict() {
+            predictJob?.cancel()
+            predictJob = predictScope.launch(Dispatchers.Default) {
+                prediction = predict(cellMap.toMnistInputTensor())
+            }
+        }
 
         fun updateCell(x: Int, y: Int, delta: Float) {
-            if (x in 0 ..< 20 && y in 0 ..< 20) {
+            if (x in 0 ..< cellSize && y in 0 ..< cellSize) {
                 cellMap[y][x] = (cellMap[y][x] + delta).coerceIn(0f .. 1f)
             }
         }
@@ -102,19 +112,17 @@ fun MnistScreen() {
         }
 
         fun clear() {
-            for (y in 0 ..< 20) {
-                for (x in 0 ..< 20) {
+            for (y in 0 ..< cellSize) {
+                for (x in 0 ..< cellSize) {
                     cellMap[y][x] = 0f
                 }
             }
-            prediction = null
+            predict()
         }
 
-        fun predict() {
-            predictJob?.cancel()
-            predictJob = predictScope.launch(Dispatchers.Default) {
-                prediction = predict(cellMap.toMnistInputTensor())
-            }
+        LaunchedEffect(Unit) {
+            initializeModel()
+            isModelLoaded = true
         }
 
         // CellBoard
@@ -128,30 +136,25 @@ fun MnistScreen() {
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
                                 val paddingPx = padding.large.toPx() + border.medium.toPx()
-                                val x = (20f * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
-                                val y = (20f * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
+                                val x = (cellSize * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
+                                val y = (cellSize * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
                                 if (lastPoint != x to y) {
                                     draw(x = x, y = y, brushMode = brushMode)
                                     lastPoint = x to y
                                 }
-                            },
-                            onDragCancel = {
-                                lastPoint = null
                                 predict()
                             },
-                            onDragEnd = {
-                                lastPoint = null
-                                predict()
-                            },
+                            onDragCancel = { lastPoint = null },
+                            onDragEnd = { lastPoint = null },
                         )
                     }
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = { offset ->
                                 val paddingPx = padding.large.toPx() + border.medium.toPx()
-                                val x = (20f * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
-                                val y = (20f * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
+                                val x = (cellSize * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
+                                val y = (cellSize * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
                                 draw(x = x, y = y, brushMode = brushMode)
                                 predict()
@@ -170,20 +173,20 @@ fun MnistScreen() {
                     .padding(border.medium)
                     .align(Alignment.Center)
             ) {
-                val cellSize = 0.05f * (component.cellBoard - 2 * border.medium).toPx()
-                for (y in 0 until 20) {
-                    for (x in 0 until 20) {
+                val cellPx = (component.cellBoard - 2 * border.medium).toPx() / cellSize.toFloat()
+                for (y in 0 ..< cellSize) {
+                    for (x in 0 ..< cellSize) {
                         // Cell
                         drawRect(
                             color = contentColor.copy(alpha = cellMap[y][x]),
-                            topLeft = Offset(x * cellSize, y * cellSize),
-                            size = Size(cellSize, cellSize)
+                            topLeft = Offset(x * cellPx, y * cellPx),
+                            size = Size(cellPx, cellPx)
                         )
                         // Cell Border
                         drawRect(
                             color = contentColor,
-                            topLeft = Offset(x * cellSize, y * cellSize),
-                            size = Size(cellSize, cellSize),
+                            topLeft = Offset(x * cellPx, y * cellPx),
+                            size = Size(cellPx, cellPx),
                             style = Stroke(width = border.small.toPx())
                         )
                     }
@@ -257,7 +260,7 @@ fun MnistScreen() {
                     text = "?",
                     onClick = { /* TODO */ },
                 )
-                if (predictJob?.isActive ?: false) {
+                if (!isModelLoaded || predictJob?.isActive ?: false) {
                     LoadingBox()
                 }
             }
