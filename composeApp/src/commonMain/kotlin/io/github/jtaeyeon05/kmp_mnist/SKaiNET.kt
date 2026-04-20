@@ -1,6 +1,8 @@
 package io.github.jtaeyeon05.kmp_mnist
 
 import kmp_mnist.composeapp.generated.resources.Res
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import sk.ainet.context.DirectCpuExecutionContext
 import sk.ainet.io.gguf.GGUFReader
@@ -13,7 +15,6 @@ import sk.ainet.lang.tensor.Tensor
 import sk.ainet.lang.tensor.flatten
 import sk.ainet.lang.tensor.matmul
 import sk.ainet.lang.tensor.plus
-import sk.ainet.lang.tensor.pprint
 import sk.ainet.lang.tensor.relu
 import sk.ainet.lang.types.FP32
 
@@ -186,6 +187,19 @@ suspend fun model(): Module<FP32, Float> {
     }
 }
 
+fun argmax(input: Tensor<FP32, Float>): Int {
+    val inputArray = input.data.copyToFloatArray()
+    var maxIndex = -1
+    var maxValue = Float.NEGATIVE_INFINITY
+    for (i in inputArray.indices) {
+        if (inputArray[i] > maxValue) {
+            maxIndex = i
+            maxValue = inputArray[i]
+        }
+    }
+    return maxIndex
+}
+
 fun input(
     cellMap: List<List<Float>>
 ): Tensor<FP32, Float> {
@@ -203,23 +217,11 @@ fun input(
     )
 }
 
-fun argmax(input: Tensor<FP32, Float>): Int {
-    val inputArray = input.data.copyToFloatArray()
-    var maxIndex = -1
-    var maxValue = Float.NEGATIVE_INFINITY
-    for (i in inputArray.indices) {
-        if (inputArray[i] > maxValue) {
-            maxIndex = i
-            maxValue = inputArray[i]
-        }
-    }
-    return maxIndex
-}
-
-fun test(
+suspend fun predict(
     cellMap: List<List<Float>>
-): String {
-    if (model == null) return "NULL"
+): Tensor<FP32, Float>? = withContext(Dispatchers.Default) {
+    if (model == null) return@withContext null
+
     model!!.zeroGrad()
     val input = input(cellMap)
     val output = model!!.forward(
@@ -227,10 +229,5 @@ fun test(
         ctx = evalContext
     )
 
-    println(output.pprint())
-    println()
-    return """
-        ${output.pprint()}
-        ${argmax(output).toString()}
-    """.trimIndent()
+    output
 }

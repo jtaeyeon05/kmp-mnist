@@ -10,13 +10,21 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @Composable
@@ -47,6 +55,47 @@ fun SquareButton(
             Text(
                 modifier = Modifier.padding(start = 0.1f * typography.medium.dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
                 text = text,
+                style = style.copy(
+                    fontSize = typography.medium.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = typography.medium.lineSp,
+                    lineHeightStyle = LineHeightStyle(
+                        alignment = LineHeightStyle.Alignment.Center,
+                        trim = LineHeightStyle.Trim.None
+                    ),
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingBox(
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
+) {
+    LocalLayoutConstraints.current.run {
+        var rotateDegree by rememberSaveable { mutableStateOf(0f) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                rotateDegree = (rotateDegree + 90f) % 360f
+                delay(500.milliseconds)
+            }
+        }
+
+        Box(
+            modifier = modifier
+                .size(component.squareButton)
+                .background(
+                    color = MaterialTheme.colorScheme.background,
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(start = 0.1f * typography.medium.dp) // Mona12 폰트의 오른쪽 여백에 대한 대응
+                    .rotate(rotateDegree),
+                text = "⟳",
                 style = style.copy(
                     fontSize = typography.medium.sp,
                     textAlign = TextAlign.Center,

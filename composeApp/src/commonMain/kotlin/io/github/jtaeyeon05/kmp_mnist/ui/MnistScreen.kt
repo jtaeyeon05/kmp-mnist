@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -32,15 +34,24 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
+import io.github.jtaeyeon05.kmp_mnist.argmax
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.initializeModel
-import io.github.jtaeyeon05.kmp_mnist.test
+import io.github.jtaeyeon05.kmp_mnist.predict
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import sk.ainet.lang.tensor.Tensor
+import sk.ainet.lang.tensor.pprint
+import sk.ainet.lang.types.FP32
 
 
 @Composable
 fun MnistScreen() {
     LocalLayoutConstraints.current.run {
+        val predictScope = rememberCoroutineScope()
         val contentColor = LocalContentColor.current
+
         val cellMap = rememberSaveable {
             SnapshotStateList(20) {
                 SnapshotStateList(20) {
@@ -49,7 +60,8 @@ fun MnistScreen() {
             }
         }
         var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
-        var testOutput by rememberSaveable { mutableStateOf("Output") }
+        var prediction by remember { mutableStateOf<Tensor<FP32, Float>?>(null) }
+        var predictJob by remember { mutableStateOf<Job?>(null) }
 
         LaunchedEffect(Unit) {
             initializeModel()
@@ -99,9 +111,11 @@ fun MnistScreen() {
             }
         }
 
-        // TODO
-        fun test() {
-            testOutput = test(cellMap.map { it.toList() })
+        fun predict() {
+            predictJob?.cancel()
+            predictJob = predictScope.launch(Dispatchers.Default) {
+                prediction = predict(cellMap.map { it.toList() })
+            }
         }
 
         // CellBoard
@@ -123,8 +137,14 @@ fun MnistScreen() {
                                     lastPoint = x to y
                                 }
                             },
-                            onDragCancel = { lastPoint = null; test() },
-                            onDragEnd = { lastPoint = null; test() },
+                            onDragCancel = {
+                                lastPoint = null
+                                predict()
+                            },
+                            onDragEnd = {
+                                lastPoint = null
+                                predict()
+                            },
                         )
                     }
                     .pointerInput(Unit) {
@@ -135,9 +155,8 @@ fun MnistScreen() {
                                 val y = (20f * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
                                 draw(x = x, y = y, brushMode = brushMode)
-                                test()
+                                predict()
                             },
-                            // TODO
                         )
                     }
                     .padding(padding.large)
@@ -188,7 +207,15 @@ fun MnistScreen() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = testOutput,
+                    text = when {
+                        prediction == null -> "Prediction"
+                        else -> {
+                            """
+                                ${argmax(prediction!!)}
+                                ${prediction!!.pprint()}
+                            """.trimIndent()
+                        }
+                    },
                     fontSize = typography.small.sp,
                     lineHeight = typography.small.sp,
                     textAlign = TextAlign.Center,
@@ -230,6 +257,9 @@ fun MnistScreen() {
                     text = "?",
                     onClick = { /* TODO */ },
                 )
+                if (predictJob?.isActive ?: false) {
+                    LoadingBox()
+                }
             }
 
             // Version
