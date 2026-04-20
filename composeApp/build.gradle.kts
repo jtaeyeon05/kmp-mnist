@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.0.8"
-val releaseCode = 9
+val releaseName = "1.1.0"
+val releaseCode = 10
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")
@@ -103,6 +103,9 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+
+            // SKaiNET backend (JVM Optimized)
+            implementation(libs.skainet.backend.cpu.jvm)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -113,9 +116,30 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.kotlinx.io.core)
+            implementation(libs.kotlinx.io.bytestring)
 
-            implementation("sk.ainet.core:skainet-lang-core:0.18.0")
-            implementation("sk.ainet.core:skainet-backend-cpu:0.18.0")
+            // SKaiNET core
+            implementation(libs.skainet.lang.core)
+            implementation(libs.skainet.lang.models)
+            implementation(libs.skainet.lang.dag)
+
+            // SKaiNET compilation
+            implementation(libs.skainet.compile.core)
+            implementation(libs.skainet.compile.dag)
+
+            // SKaiNET backend
+            implementation(libs.skainet.backend.cpu)
+
+            // SKaiNET data
+            implementation(libs.skainet.data.api)
+            implementation(libs.skainet.data.simple)
+
+            // SKaiNET I/O
+            implementation(libs.skainet.io.core)
+            implementation(libs.skainet.io.gguf)
+            implementation(libs.skainet.io.onnx)
+            implementation(libs.skainet.io.safetensors)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

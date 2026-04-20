@@ -17,6 +17,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
+import io.github.jtaeyeon05.kmp_mnist.initializeModel
 import io.github.jtaeyeon05.kmp_mnist.test
 
 
@@ -48,6 +50,10 @@ fun MnistScreen() {
         }
         var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
         var testOutput by rememberSaveable { mutableStateOf("Output") }
+
+        LaunchedEffect(Unit) {
+            initializeModel()
+        }
 
         fun updateCell(x: Int, y: Int, delta: Float) {
             if (x in 0 ..< 20 && y in 0 ..< 20) {
@@ -114,12 +120,11 @@ fun MnistScreen() {
 
                                 if (lastPoint != x to y) {
                                     draw(x = x, y = y, brushMode = brushMode)
-                                    test()
                                     lastPoint = x to y
                                 }
                             },
-                            onDragCancel = { lastPoint = null },
-                            onDragEnd = { lastPoint = null },
+                            onDragCancel = { lastPoint = null; test() },
+                            onDragEnd = { lastPoint = null; test() },
                         )
                     }
                     .pointerInput(Unit) {
