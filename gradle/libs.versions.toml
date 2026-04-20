@@ -42,18 +42,18 @@ kotlinx-io-bytestring = { module = "org.jetbrains.kotlinx:kotlinx-io-bytestring"
 
 # SKaiNET
 skainet-lang-core = { module = "sk.ainet.core:skainet-lang-core", version.ref = "skainet" }
-skainet-lang-models = { module = "sk.ainet.core:skainet-lang-models", version.ref = "skainet" }
-skainet-lang-dag = { module = "sk.ainet.core:skainet-lang-dag", version.ref = "skainet" }
+# skainet-lang-models = { module = "sk.ainet.core:skainet-lang-models", version.ref = "skainet" }
+# skainet-lang-dag = { module = "sk.ainet.core:skainet-lang-dag", version.ref = "skainet" }
 skainet-compile-core = { module = "sk.ainet.core:skainet-compile-core", version.ref = "skainet" }
-skainet-compile-dag = { module = "sk.ainet.core:skainet-compile-dag", version.ref = "skainet" }
+# skainet-compile-dag = { module = "sk.ainet.core:skainet-compile-dag", version.ref = "skainet" }
 skainet-backend-cpu = { module = "sk.ainet.core:skainet-backend-cpu", version.ref = "skainet" }
 skainet-backend-cpu-jvm = { module = "sk.ainet.core:skainet-backend-cpu", version.ref = "skainet" }
-skainet-data-api = { module = "sk.ainet.core:skainet-data-api", version.ref = "skainet" }
-skainet-data-simple = { module = "sk.ainet.core:skainet-data-basic", version.ref = "skainet" }
+# skainet-data-api = { module = "sk.ainet.core:skainet-data-api", version.ref = "skainet" }
+# skainet-data-simple = { module = "sk.ainet.core:skainet-data-basic", version.ref = "skainet" }
 skainet-io-core = { module = "sk.ainet.core:skainet-io-core", version.ref = "skainet" }
 skainet-io-gguf = { module = "sk.ainet.core:skainet-io-gguf", version.ref = "skainet" }
-skainet-io-onnx = { module = "sk.ainet.core:skainet-io-onnx", version.ref = "skainet" }
-skainet-io-safetensors = { module = "sk.ainet.core:skainet-io-safetensors", version.ref = "skainet" }
+# skainet-io-onnx = { module = "sk.ainet.core:skainet-io-onnx", version.ref = "skainet" }
+# skainet-io-safetensors = { module = "sk.ainet.core:skainet-io-safetensors", version.ref = "skainet" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

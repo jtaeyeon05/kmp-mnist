@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.1.6"
-val releaseCode = 16
+val releaseName = "1.1.7"
+val releaseCode = 17
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")
@@ -104,7 +104,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
 
-            // SKaiNET backend (JVM Optimized)
+            // SKaiNET (JVM Optimized)
             implementation(libs.skainet.backend.cpu.jvm)
         }
         commonMain.dependencies {
@@ -119,27 +119,19 @@ kotlin {
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.io.bytestring)
 
-            // SKaiNET core
+            // SKaiNET
             implementation(libs.skainet.lang.core)
-            implementation(libs.skainet.lang.models)
-            implementation(libs.skainet.lang.dag)
-
-            // SKaiNET compilation
+            // implementation(libs.skainet.lang.models)
+            // implementation(libs.skainet.lang.dag)
             implementation(libs.skainet.compile.core)
-            implementation(libs.skainet.compile.dag)
-
-            // SKaiNET backend
+            // implementation(libs.skainet.compile.dag)
             implementation(libs.skainet.backend.cpu)
-
-            // SKaiNET data
-            implementation(libs.skainet.data.api)
-            implementation(libs.skainet.data.simple)
-
-            // SKaiNET I/O
+            // implementation(libs.skainet.data.api)
+            // implementation(libs.skainet.data.simple)
             implementation(libs.skainet.io.core)
             implementation(libs.skainet.io.gguf)
-            implementation(libs.skainet.io.onnx)
-            implementation(libs.skainet.io.safetensors)
+            // implementation(libs.skainet.io.onnx)
+            // implementation(libs.skainet.io.safetensors)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
