@@ -40,6 +40,9 @@ import io.github.jtaeyeon05.kmp_mnist.ml.initializeModel
 import io.github.jtaeyeon05.kmp_mnist.ml.predict
 import io.github.jtaeyeon05.kmp_mnist.ml.softmax
 import io.github.jtaeyeon05.kmp_mnist.ml.toMnistInputTensor
+import io.github.jtaeyeon05.kmp_mnist.ui.component.LoadingBox
+import io.github.jtaeyeon05.kmp_mnist.ui.component.SquareButton
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -63,10 +66,12 @@ fun MnistScreen() {
                 }
             }
         }
-        var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
         var prediction by remember { mutableStateOf<Tensor<FP32, Float>?>(null) }
         var predictJob by remember { mutableStateOf<Job?>(null) }
         var isModelLoaded by rememberSaveable { mutableStateOf(false) }
+
+        var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
+        var realtimeComputationMode by rememberSaveable { mutableStateOf(false) }
 
         fun predict() {
             predictJob?.cancel()
@@ -143,10 +148,16 @@ fun MnistScreen() {
                                     draw(x = x, y = y, brushMode = brushMode)
                                     lastPoint = x to y
                                 }
-                                predict()
+                                if (realtimeComputationMode) predict()
                             },
-                            onDragCancel = { lastPoint = null },
-                            onDragEnd = { lastPoint = null },
+                            onDragCancel = {
+                                lastPoint = null
+                                if (!realtimeComputationMode) predict()
+                            },
+                            onDragEnd = {
+                                lastPoint = null
+                                if (!realtimeComputationMode) predict()
+                            },
                         )
                     }
                     .pointerInput(Unit) {

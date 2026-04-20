@@ -1,4 +1,4 @@
-package io.github.jtaeyeon05.kmp_mnist.ui
+package io.github.jtaeyeon05.kmp_mnist.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable

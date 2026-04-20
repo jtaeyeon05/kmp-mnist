@@ -1,4 +1,4 @@
-package io.github.jtaeyeon05.kmp_mnist.ui
+package io.github.jtaeyeon05.kmp_mnist.ui.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme

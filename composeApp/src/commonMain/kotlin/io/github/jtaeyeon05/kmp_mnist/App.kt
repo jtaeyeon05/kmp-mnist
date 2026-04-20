@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import io.github.jtaeyeon05.kmp_mnist.ui.AppTheme
-import io.github.jtaeyeon05.kmp_mnist.ui.LocalLayoutConstraints
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.AppTheme
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.MnistScreen
-import io.github.jtaeyeon05.kmp_mnist.ui.rememberLayoutConstraints
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.rememberLayoutConstraints
 
 
 @Composable

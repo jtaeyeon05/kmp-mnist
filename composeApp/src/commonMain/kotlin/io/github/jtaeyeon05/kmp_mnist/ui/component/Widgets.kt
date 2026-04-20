@@ -1,4 +1,4 @@
-package io.github.jtaeyeon05.kmp_mnist.ui
+package io.github.jtaeyeon05.kmp_mnist.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
