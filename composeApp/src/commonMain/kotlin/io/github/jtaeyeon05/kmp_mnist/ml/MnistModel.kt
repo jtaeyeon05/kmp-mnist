@@ -1,4 +1,4 @@
-package io.github.jtaeyeon05.kmp_mnist
+package io.github.jtaeyeon05.kmp_mnist.ml
 
 import kmp_mnist.composeapp.generated.resources.Res
 import kotlinx.coroutines.Dispatchers
@@ -19,15 +19,11 @@ import sk.ainet.lang.tensor.relu
 import sk.ainet.lang.types.FP32
 
 
-private val baseContext = DirectCpuExecutionContext()
-private val evalContext = DefaultNeuralNetworkExecutionContext()
+val baseContext = DirectCpuExecutionContext()
+val evalContext = DefaultNeuralNetworkExecutionContext()
 
-private var model: Module<FP32, Float>? = null
-
-suspend fun initializeModel() {
-    if (model != null) return
-    model = model()
-}
+var model: Module<FP32, Float>? = null
+    private set
 
 suspend fun model(): Module<FP32, Float> {
     val source = Buffer().apply { write(Res.readBytes("files/MnistCNN.gguf")) }
@@ -63,6 +59,7 @@ suspend fun model(): Module<FP32, Float> {
             conv2d(id = "layer1.conv1_1") {
                 inChannels = 1
                 outChannels = 16
+                trainable = false
                 kernelSize(size = 3)
                 stride(size = 1)
                 padding(size = 1)
@@ -72,6 +69,7 @@ suspend fun model(): Module<FP32, Float> {
             conv2d(id = "layer1.conv1_2") {
                 inChannels = 16
                 outChannels = 16
+                trainable = false
                 kernelSize(size = 3)
                 stride(size = 1)
                 padding(size = 1)
@@ -88,6 +86,7 @@ suspend fun model(): Module<FP32, Float> {
             conv2d(id = "layer2.conv2_1") {
                 inChannels = 16
                 outChannels = 32
+                trainable = false
                 kernelSize(size = 3)
                 stride(size = 1)
                 padding(size = 1)
@@ -97,6 +96,7 @@ suspend fun model(): Module<FP32, Float> {
             conv2d(id = "layer2.conv2_2") {
                 inChannels = 32
                 outChannels = 32
+                trainable = false
                 kernelSize(size = 3)
                 stride(size = 1)
                 padding(size = 1)
@@ -126,7 +126,6 @@ suspend fun model(): Module<FP32, Float> {
              * activation { it.relu() }
              * dense(outputDimension = 10, id = "layer3.fc3_2")
              */
-
             activation { it.flatten(startDim = 1, endDim = 3) }
             activation {
                 val weights = run {
@@ -187,43 +186,12 @@ suspend fun model(): Module<FP32, Float> {
     }
 }
 
-fun argmax(input: Tensor<FP32, Float>): Int {
-    val inputArray = input.data.copyToFloatArray()
-    var maxIndex = -1
-    var maxValue = Float.NEGATIVE_INFINITY
-    for (i in inputArray.indices) {
-        if (inputArray[i] > maxValue) {
-            maxIndex = i
-            maxValue = inputArray[i]
-        }
-    }
-    return maxIndex
-}
-
-fun input(
-    cellMap: List<List<Float>>
-): Tensor<FP32, Float> {
-    val data = FloatArray(28 * 28)
-    for (y in 0 ..< 20) {
-        for (x in 0 ..< 20) {
-            data[(y + 4) * 28 + (x + 4)] = cellMap[y][x]
-        }
-    }
-
-    return baseContext.fromFloatArray(
-        shape = Shape(1, 1, 28, 28),
-        dtype = FP32::class,
-        data = data,
-    )
-}
-
 suspend fun predict(
-    cellMap: List<List<Float>>
+    input: Tensor<FP32, Float>
 ): Tensor<FP32, Float>? = withContext(Dispatchers.Default) {
-    if (model == null) return@withContext null
+    if (model == null) model = model()
 
     model!!.zeroGrad()
-    val input = input(cellMap)
     val output = model!!.forward(
         input = input,
         ctx = evalContext

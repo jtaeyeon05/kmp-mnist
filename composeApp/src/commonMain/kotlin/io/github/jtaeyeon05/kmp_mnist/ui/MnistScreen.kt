@@ -17,7 +17,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,16 +33,19 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
-import io.github.jtaeyeon05.kmp_mnist.argmax
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
-import io.github.jtaeyeon05.kmp_mnist.initializeModel
-import io.github.jtaeyeon05.kmp_mnist.predict
+import io.github.jtaeyeon05.kmp_mnist.ml.argmax
+import io.github.jtaeyeon05.kmp_mnist.ml.predict
+import io.github.jtaeyeon05.kmp_mnist.ml.softmax
+import io.github.jtaeyeon05.kmp_mnist.ml.toMnistInputTensor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sk.ainet.lang.tensor.Tensor
 import sk.ainet.lang.tensor.pprint
+import sk.ainet.lang.tensor.softmax
 import sk.ainet.lang.types.FP32
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -62,10 +64,6 @@ fun MnistScreen() {
         var brushMode by rememberSaveable { mutableStateOf(1) }  // 0: Pen, 1: Small Brush, 2: Big Brush (TMP)
         var prediction by remember { mutableStateOf<Tensor<FP32, Float>?>(null) }
         var predictJob by remember { mutableStateOf<Job?>(null) }
-
-        LaunchedEffect(Unit) {
-            initializeModel()
-        }
 
         fun updateCell(x: Int, y: Int, delta: Float) {
             if (x in 0 ..< 20 && y in 0 ..< 20) {
@@ -109,12 +107,13 @@ fun MnistScreen() {
                     cellMap[y][x] = 0f
                 }
             }
+            prediction = null
         }
 
         fun predict() {
             predictJob?.cancel()
             predictJob = predictScope.launch(Dispatchers.Default) {
-                prediction = predict(cellMap.map { it.toList() })
+                prediction = predict(cellMap.toMnistInputTensor())
             }
         }
 
@@ -212,6 +211,7 @@ fun MnistScreen() {
                         else -> {
                             """
                                 ${argmax(prediction!!)}
+                                ${softmax(prediction!!).joinToString("-") { "${(100f * it).roundToInt()}%" }}
                                 ${prediction!!.pprint()}
                             """.trimIndent()
                         }
