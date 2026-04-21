@@ -31,74 +31,63 @@ class LayoutConstraints private constructor(
     )
 
     data class Padding(
-        val small: Dp,
-        val medium: Dp,
-        val large: Dp,
-    )
+        private val small: Dp,
+        private val medium: Dp,
+        private val large: Dp,
+        private val innerSmall: Dp,
+        private val innerMedium: Dp,
+        private val innerLarge: Dp,
+    ) {
+        operator fun invoke(scale: Scale) = when (scale) {
+            Scale.SMALL -> small
+            Scale.MEDIUM -> medium
+            Scale.LARGE -> large
+        }
+        fun inner(scale: Scale) = when (scale) {
+            Scale.SMALL -> innerSmall
+            Scale.MEDIUM -> innerMedium
+            Scale.LARGE -> innerLarge
+        }
+    }
 
     data class Border(
-        val small: Dp,
-        val medium: Dp,
-        val large: Dp,
-    )
+        private val small: Dp,
+        private val medium: Dp,
+        private val large: Dp,
+    ) {
+        operator fun invoke(scale: Scale) = when (scale) {
+            Scale.SMALL -> small
+            Scale.MEDIUM -> medium
+            Scale.LARGE -> large
+        }
+    }
 
     data class Typography(
-        val small: TypographySize,
-        val medium: TypographySize,
-        val large: TypographySize,
         val lineHeight: Float,
-    )
+        private val small: TypographySize,
+        private val medium: TypographySize,
+        private val large: TypographySize,
+    ) {
+        operator fun invoke(scale: Scale) = when (scale) {
+            Scale.SMALL -> small
+            Scale.MEDIUM -> medium
+            Scale.LARGE -> large
+        }
+    }
 
     data class Component(
         val cellBoard: Dp,
-        val outputBoard: DpSize,
-        val squareButton: DpSize,
-    )
+        val predictBoard: DpSize,
+        val dialog: DpSize,
 
-    data class TypographySize(
-        val size: Dp,
-        val lineHeight: Float,
-        private val density: Density,
+        private val smallHeight: Dp,
+        private val mediumHeight: Dp,
+        private val largeHeight: Dp,
     ) {
-        val dp: Dp get() = size
-        val sp: TextUnit get() = with(density) { dp.toSp() }
-        val lineDp: Dp get() = size * lineHeight
-        val lineSp: TextUnit get() = with(density) { lineDp.toSp() }
-
-
-        operator fun unaryPlus() = this
-        operator fun unaryMinus() = this * -1f
-
-        operator fun plus(other: TypographySize) = TypographySize(
-            size = this.size + other.size,
-            lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
-            density = this.density,
-        )
-
-        operator fun minus(other: TypographySize) = TypographySize(
-            size = this.size - other.size,
-            lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
-            density = this.density,
-        )
-
-        operator fun times(scale: Number) = TypographySize(
-            size = this.size * scale.toFloat(),
-            lineHeight = this.lineHeight,
-            density = this.density,
-        )
-
-        operator fun div(scale: Number) = TypographySize(
-            size = this.size / scale.toFloat(),
-            lineHeight = this.lineHeight,
-            density = this.density,
-        )
-
-        companion object {
-            operator fun Number.times(typographySize: TypographySize) = TypographySize(
-                size = this.toFloat() * typographySize.size,
-                lineHeight = typographySize.lineHeight,
-                density = typographySize.density,
-            )
+        fun height(scale: Scale) = when (scale) {
+            Scale.SMALL -> smallHeight
+            Scale.MEDIUM -> mediumHeight
+            Scale.LARGE -> largeHeight
         }
     }
 
@@ -121,6 +110,9 @@ class LayoutConstraints private constructor(
                 small = base * 0.02f,
                 medium = base * 0.04f,
                 large = base * 0.08f,
+                innerSmall = base * 0.01f,
+                innerMedium = base * 0.02f,
+                innerLarge = base * 0.04f,
             )
             val border = Border(
                 small = base * 0.002f,
@@ -141,66 +133,75 @@ class LayoutConstraints private constructor(
                     density = density,
                 )
                 val large = TypographySize(
-                    size = base * 0.08f,
+                    size = base * 0.06f,
                     lineHeight = lineHeight,
                     density = density,
                 )
 
                 Typography(
+                    lineHeight = lineHeight,
                     small = small,
                     medium = medium,
                     large = large,
-                    lineHeight = lineHeight,
                 )
             }
             val component = run {
-                val availableWidth = screen.width - 2 * padding.large
-                val availableHeight = screen.height - 2 * padding.large
+                val availableWidth = screen.width - 2 * padding(Scale.LARGE)
+                val availableHeight = screen.height - 2 * padding(Scale.LARGE)
 
                 val cellBoard: Dp
-                val outputBoard: DpSize
+                val predictBoard: DpSize
+                val dialog: DpSize
 
                 if (screen.isVertical) {
-                    if (availableWidth <= availableHeight - 2 * (0.2f * availableHeight + padding.medium)) {
+                    if (availableWidth <= availableHeight - 2 * (0.2f * availableHeight + padding(Scale.MEDIUM))) {
                         cellBoard = availableWidth
-                        outputBoard = DpSize(
+                        predictBoard = DpSize(
                             width = cellBoard,
-                            height = 0.5f * (availableHeight - cellBoard) - padding.medium,
+                            height = 0.5f * (availableHeight - cellBoard) - padding(Scale.MEDIUM),
                         )
                     } else {
                         val outputBoardHeight = 0.2f * availableHeight
-                        cellBoard = availableHeight - 2 * (0.2f * availableHeight + padding.medium)
-                        outputBoard = DpSize(
+                        cellBoard = availableHeight - 2 * (0.2f * availableHeight + padding(Scale.MEDIUM))
+                        predictBoard = DpSize(
                             width = cellBoard,
                             height = outputBoardHeight,
                         )
                     }
+                    dialog = DpSize(
+                        width = availableWidth,
+                        height = min(availableHeight, base * 1.5f),
+                    )
                 } else {
-                    if (availableHeight <= availableWidth - 2 * (0.2f * availableWidth + padding.medium)) {
+                    if (availableHeight <= availableWidth - 2 * (0.2f * availableWidth + padding(Scale.MEDIUM))) {
                         cellBoard = availableHeight
-                        outputBoard = DpSize(
-                            width = 0.5f * (availableWidth - cellBoard) - padding.medium,
+                        predictBoard = DpSize(
+                            width = 0.5f * (availableWidth - cellBoard) - padding(Scale.MEDIUM),
                             height = cellBoard,
                         )
                     } else {
                         val outputBoardWidth = 0.2f * availableWidth
-                        cellBoard = availableWidth - 2 * (0.2f * availableWidth + padding.medium)
-                        outputBoard = DpSize(
+                        cellBoard = availableWidth - 2 * (0.2f * availableWidth + padding(Scale.MEDIUM))
+                        predictBoard = DpSize(
                             width = outputBoardWidth,
                             height = cellBoard,
                         )
                     }
+                    dialog = DpSize(
+                        width = min(availableWidth, base * 0.8f),
+                        height = availableHeight,
+                    )
                 }
 
                 Component(
                     cellBoard = cellBoard,
-                    outputBoard = outputBoard,
-                    squareButton = DpSize(
-                        width = base * 0.08f,
-                        height = base * 0.08f,
-                    ),
-                )
+                    predictBoard = predictBoard,
+                    dialog = dialog,
 
+                    smallHeight = base * 0.06f,
+                    mediumHeight = base * 0.08f,
+                    largeHeight = base * 0.10f,
+                )
             }
 
             return LayoutConstraints(
@@ -211,6 +212,56 @@ class LayoutConstraints private constructor(
                 component = component,
             )
         }
+    }
+}
+
+enum class Scale { SMALL, MEDIUM, LARGE }
+
+@Immutable
+data class TypographySize(
+    val size: Dp,
+    val lineHeight: Float,
+    private val density: Density,
+) {
+    val dp: Dp get() = size
+    val sp: TextUnit get() = with(density) { dp.toSp() }
+    val lineDp: Dp get() = size * lineHeight
+    val lineSp: TextUnit get() = with(density) { lineDp.toSp() }
+
+
+    operator fun unaryPlus() = this
+    operator fun unaryMinus() = this * -1f
+
+    operator fun plus(other: TypographySize) = TypographySize(
+        size = this.size + other.size,
+        lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
+        density = this.density,
+    )
+
+    operator fun minus(other: TypographySize) = TypographySize(
+        size = this.size - other.size,
+        lineHeight = 0.5f * (this.lineHeight + other.lineHeight),
+        density = this.density,
+    )
+
+    operator fun times(scale: Number) = TypographySize(
+        size = this.size * scale.toFloat(),
+        lineHeight = this.lineHeight,
+        density = this.density,
+    )
+
+    operator fun div(scale: Number) = TypographySize(
+        size = this.size / scale.toFloat(),
+        lineHeight = this.lineHeight,
+        density = this.density,
+    )
+
+    companion object {
+        operator fun Number.times(typographySize: TypographySize) = TypographySize(
+            size = this.toFloat() * typographySize.size,
+            lineHeight = typographySize.lineHeight,
+            density = typographySize.density,
+        )
     }
 }
 

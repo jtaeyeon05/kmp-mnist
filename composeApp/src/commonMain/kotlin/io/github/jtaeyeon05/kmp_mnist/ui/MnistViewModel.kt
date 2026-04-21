@@ -1,14 +1,15 @@
 package io.github.jtaeyeon05.kmp_mnist.ui
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.jtaeyeon05.kmp_mnist.ml.initializeModel
+import io.github.jtaeyeon05.kmp_mnist.ml.initializeMnistModel
+import io.github.jtaeyeon05.kmp_mnist.ml.predictMnistModel
 import io.github.jtaeyeon05.kmp_mnist.ml.toMnistInputTensor
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,24 +33,28 @@ class MnistViewModel: ViewModel() {
     var showDialog by mutableStateOf(false)
         private set
 
-    private var predictJob: Job? = null
+    val isLoading by derivedStateOf { !isModelLoaded || isPredicting }
 
+    private var predictJob: Job? = null
     private var isModelLoaded by mutableStateOf(false)
+    private var isPredicting by mutableStateOf(false)
 
     init {
         viewModelScope.launch {
-            initializeModel()
+            initializeMnistModel()
             isModelLoaded = true
         }
     }
 
-    val isLoading
-        get() = !isModelLoaded || predictJob?.isActive == true
-
     fun predict() {
         predictJob?.cancel()
         predictJob = viewModelScope.launch(Dispatchers.Default) {
-            prediction = io.github.jtaeyeon05.kmp_mnist.ml.predict(cellMap.toMnistInputTensor())
+            isPredicting = true
+            try {
+                prediction = predictMnistModel(cellMap.toMnistInputTensor())
+            } finally {
+                if (predictJob == coroutineContext[Job]) isPredicting = false
+            }
         }
     }
 

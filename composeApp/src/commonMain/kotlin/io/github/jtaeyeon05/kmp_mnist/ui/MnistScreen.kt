@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,8 +30,9 @@ import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.ml.argmax
 import io.github.jtaeyeon05.kmp_mnist.ml.softmax
 import io.github.jtaeyeon05.kmp_mnist.ui.component.LoadingBox
-import io.github.jtaeyeon05.kmp_mnist.ui.component.SquareButton
+import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
+import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import sk.ainet.lang.tensor.pprint
 import kotlin.math.roundToInt
 
@@ -54,7 +54,7 @@ fun MnistScreen(
                         detectDragGestures(
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
-                                val paddingPx = padding.large.toPx() + border.medium.toPx()
+                                val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
                                 val x = (viewModel.cellSize * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
                                 val y = (viewModel.cellSize * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
@@ -77,7 +77,7 @@ fun MnistScreen(
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = { offset ->
-                                val paddingPx = padding.large.toPx() + border.medium.toPx()
+                                val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
                                 val x = (viewModel.cellSize * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
                                 val y = (viewModel.cellSize * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
@@ -86,19 +86,19 @@ fun MnistScreen(
                             },
                         )
                     }
-                    .padding(padding.large)
+                    .padding(padding(Scale.LARGE))
                     .size(component.cellBoard)
                     .background(
                         color = MaterialTheme.colorScheme.background
                     )
                     .border(
-                        width = border.medium,
+                        width = border(Scale.MEDIUM),
                         color = MaterialTheme.colorScheme.onBackground,
                     )
-                    .padding(border.medium)
+                    .padding(border(Scale.MEDIUM))
                     .align(Alignment.Center)
             ) {
-                val cellPx = (component.cellBoard - 2 * border.medium).toPx() / viewModel.cellSize.toFloat()
+                val cellPx = (component.cellBoard - 2 * border(Scale.MEDIUM)).toPx() / viewModel.cellSize.toFloat()
                 for (y in 0 ..< viewModel.cellSize) {
                     for (x in 0 ..< viewModel.cellSize) {
                         // Cell
@@ -112,24 +112,25 @@ fun MnistScreen(
                             color = contentColor,
                             topLeft = Offset(x * cellPx, y * cellPx),
                             size = Size(cellPx, cellPx),
-                            style = Stroke(width = border.small.toPx())
+                            style = Stroke(width = border(Scale.SMALL).toPx())
                         )
                     }
                 }
             }
 
-            // OutputBoard
+            // PredictBoard
             Box(
                 modifier = Modifier
-                    .padding(padding.large)
-                    .size(component.outputBoard)
+                    .padding(padding(Scale.LARGE))
+                    .size(component.predictBoard)
                     .background(
                         color = MaterialTheme.colorScheme.background
                     )
                     .border(
-                        width = border.medium,
+                        width = border(Scale.MEDIUM),
                         color = MaterialTheme.colorScheme.onBackground,
                     )
+                    .padding(border(Scale.MEDIUM))
                     .align(if (screen.isVertical) Alignment.BottomCenter else Alignment.CenterEnd),
                 contentAlignment = Alignment.Center
             ) {
@@ -144,8 +145,8 @@ fun MnistScreen(
                             """.trimIndent()
                         }
                     },
-                    fontSize = typography.small.sp,
-                    lineHeight = typography.small.sp,
+                    fontSize = typography(Scale.SMALL).sp,
+                    lineHeight = typography(Scale.SMALL).sp,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -153,38 +154,41 @@ fun MnistScreen(
             // Toolbar
             Column(
                 modifier = Modifier
-                    .padding(padding.small)
-                    .width(component.squareButton.width)
+                    .padding(padding(Scale.SMALL))
+                    .width(component.height(Scale.MEDIUM))
                     .align(Alignment.TopStart),
-                verticalArrangement = Arrangement.spacedBy(padding.small),
+                verticalArrangement = Arrangement.spacedBy(padding.inner(Scale.MEDIUM)),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                SquareButton(
-                    text = when (viewModel.brushMode) {
-                        BrushMode.PENCIL -> "✎"
-                        BrushMode.SMALL_BRUSH -> "✑"
-                        BrushMode.LARGE_BRUSH -> "✑"
-                    },
-                    style = LocalTextStyle.current.copy(
+                RectangleTextButton(
+                    onClick = { viewModel.toggleBrushMode() },
+                ) {
+                    Text(
+                        text = when (viewModel.brushMode) {
+                            BrushMode.PENCIL -> "✎"
+                            BrushMode.SMALL_BRUSH -> "✑"
+                            BrushMode.LARGE_BRUSH -> "✑"
+                        },
                         fontWeight = when (viewModel.brushMode) {
                             BrushMode.PENCIL -> FontWeight.Normal
                             BrushMode.SMALL_BRUSH -> FontWeight.Normal
                             BrushMode.LARGE_BRUSH -> FontWeight.Bold
                         },
-                    ),
-                    onClick = { viewModel.toggleBrushMode() },
-                )
-                SquareButton(
-                    text = "⟲",
+                    )
+                }
+                RectangleTextButton(
                     onClick = {
                         viewModel.clear()
                         viewModel.predict()
                     },
-                )
-                SquareButton(
-                    text = "?",
+                ) {
+                    Text(text = "⟲")
+                }
+                RectangleTextButton(
                     onClick = { viewModel.showDialog() },
-                )
+                ) {
+                    Text(text = "?")
+                }
                 if (viewModel.isLoading) {
                     LoadingBox()
                 }
@@ -193,17 +197,17 @@ fun MnistScreen(
             // Version
             Text(
                 modifier = Modifier
-                    .padding(padding.small)
+                    .padding(padding(Scale.SMALL))
                     .align(Alignment.TopEnd),
                 text = "${BuildInfo.RELEASE_NAME} [${BuildInfo.RELEASE_CODE}]\n${BuildInfo.BUILD_NUMBER}",
-                fontSize = typography.small.sp,
-                lineHeight = typography.small.sp,
+                fontSize = typography(Scale.SMALL).sp,
+                lineHeight = typography(Scale.SMALL).sp,
                 textAlign = TextAlign.End,
             )
 
             // Dialog
             if (viewModel.showDialog) {
-                // TODO: Dialog
+                MnistDialog(viewModel = viewModel)
             }
         }
     }

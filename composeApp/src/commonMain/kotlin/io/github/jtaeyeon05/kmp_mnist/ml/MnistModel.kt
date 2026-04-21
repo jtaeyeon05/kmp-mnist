@@ -23,10 +23,10 @@ import sk.ainet.lang.types.FP32
 val baseContext = DirectCpuExecutionContext()
 val evalContext = DefaultNeuralNetworkExecutionContext()
 
-var model: Module<FP32, Float>? = null
+var mnistModel: Module<FP32, Float>? = null
     private set
 
-suspend fun model(): Module<FP32, Float> {
+suspend fun mnistModel(): Module<FP32, Float> {
     val source = Buffer().apply { write(Res.readBytes("files/MnistCNN.gguf")) }
     val reader = GGUFReader(source)
     val tensorMap = reader.tensors.associateBy { it.name }
@@ -187,17 +187,17 @@ suspend fun model(): Module<FP32, Float> {
     }
 }
 
-suspend fun initializeModel() = withContext(Dispatchers.Default) {
-    model = model()
+suspend fun initializeMnistModel() = withContext(Dispatchers.Default) {
+    mnistModel = mnistModel()
 }
 
-suspend fun predict(
+suspend fun predictMnistModel(
     input: Tensor<FP32, Float>
 ): Tensor<FP32, Float>? = withContext(Dispatchers.Default) {
-    if (model == null) return@withContext null
+    if (mnistModel == null) return@withContext null
 
-    model!!.zeroGrad()
-    val output = model!!.forward(
+    mnistModel!!.zeroGrad()
+    val output = mnistModel!!.forward(
         input = input,
         ctx = evalContext
     )
