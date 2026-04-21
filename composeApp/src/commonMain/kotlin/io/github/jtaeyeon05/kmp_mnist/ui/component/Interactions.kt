@@ -2,7 +2,6 @@ package io.github.jtaeyeon05.kmp_mnist.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -21,28 +20,18 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.times
+import io.github.jtaeyeon05.kmp_mnist.tappable
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.TypographySize.Companion.times
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
-
 
 @Composable
 fun RectangleButton(
@@ -60,11 +49,7 @@ fun RectangleButton(
                     color = MaterialTheme.colorScheme.onBackground,
                     width = border(Scale.MEDIUM),
                 )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onClick() },
-                    )
-                }
+                .tappable { onClick() }
                 .padding(padding(Scale.SMALL)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -127,11 +112,7 @@ fun RectangleSwitch(
                     color = MaterialTheme.colorScheme.onBackground,
                     width = border(Scale.MEDIUM),
                 )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onCheckedChange(!checked) },
-                    )
-                }
+                .tappable { onCheckedChange(!checked) }
                 .padding(padding.inner(scale)),
         ) {
             CompositionLocalProvider(
@@ -187,47 +168,6 @@ fun RectangleSwitch(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun LoadingBox(
-    modifier: Modifier = Modifier,
-    scale: Scale = Scale.MEDIUM,
-) {
-    LocalLayoutConstraints.current.run {
-        var rotateDegree by rememberSaveable { mutableStateOf(0f) }
-        LaunchedEffect(Unit) {
-            while (true) {
-                rotateDegree = (rotateDegree + 90f) % 360f
-                delay(500.milliseconds)
-            }
-        }
-
-        Box(
-            modifier = modifier
-                .size(component.height(scale))
-                .background(
-                    color = MaterialTheme.colorScheme.background,
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                modifier = Modifier
-                    .padding(start = 1f / 12f * typography(scale).dp) // Mona12 폰트의 오른쪽 여백에 대한 대응
-                    .rotate(rotateDegree),
-                text = "⟳",
-                style = LocalTextStyle.current.copy(
-                    textAlign = TextAlign.Center,
-                    fontSize = typography(scale).sp,
-                    lineHeight = typography(scale).lineSp,
-                    lineHeightStyle = LineHeightStyle(
-                        alignment = LineHeightStyle.Alignment.Center,
-                        trim = LineHeightStyle.Trim.None
-                    ),
-                ),
-            )
         }
     }
 }

@@ -1,9 +1,7 @@
 package io.github.jtaeyeon05.kmp_mnist.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,8 +11,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,16 +21,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Popup
+import io.github.jtaeyeon05.kmp_mnist.consumePointer
+import io.github.jtaeyeon05.kmp_mnist.tappable
+import io.github.jtaeyeon05.kmp_mnist.ui.component.HelpTip
+import io.github.jtaeyeon05.kmp_mnist.ui.component.PixelImage
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleButton
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleSwitch
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
@@ -42,12 +40,11 @@ import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import kmp_mnist.composeapp.generated.resources.Res
 import kmp_mnist.composeapp.generated.resources.github_white
-import org.jetbrains.compose.resources.imageResource
 
 
 @Composable
 fun MnistDialog(
-    viewModel: MnistViewModel = rememberSaveable { MnistViewModel() }
+    viewModel: MnistViewModel = remember { MnistViewModel() }
 ) {
     MnistDialogProvider(
         onDismissRequest = { viewModel.dismissDialog() },
@@ -72,14 +69,8 @@ private fun MnistDialogProvider(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onDismissRequest() },
-                    )
-                },
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                .tappable { onDismissRequest() },
             contentAlignment = Alignment.Center,
             content = content,
         )
@@ -89,9 +80,11 @@ private fun MnistDialogProvider(
 @Composable
 private fun MnistDialogContent(
     onDismissRequest: () -> Unit,
-    viewModel: MnistViewModel = rememberSaveable { MnistViewModel() }
+    viewModel: MnistViewModel = remember { MnistViewModel() }
 ) {
     LocalLayoutConstraints.current.run {
+        val uriHandler = LocalUriHandler.current
+
         Column(
             modifier = Modifier
                 .size(component.dialog)
@@ -103,9 +96,7 @@ private fun MnistDialogContent(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 .padding(border(Scale.LARGE))
-                .pointerInput(Unit) {
-                    detectTapGestures()
-                }  // Consume Touch Gestures
+                .consumePointer()
         ) {
             Box(
                 modifier = Modifier
@@ -143,6 +134,7 @@ private fun MnistDialogContent(
                         start = padding(Scale.SMALL),
                         end = padding(Scale.SMALL),
                     ),
+                verticalArrangement = Arrangement.spacedBy(padding.inner(Scale.MEDIUM))
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
@@ -157,15 +149,14 @@ private fun MnistDialogContent(
                         ),
                     ),
                 )
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = padding.inner(Scale.MEDIUM)),
-                )
+                Spacer(modifier = Modifier.weight(1f))
                 MnistDialogRow(
                     textContent = {
-                        Text("CellMap Size")
-                        Help()
+                        Text(text = "CellMap Size")
+                        HelpTip(
+                            popupAlignment = Alignment.CenterEnd,
+                            popupContent = { Text(text = "TODO") },
+                        )  // TODO
                     },
                     interactionContent = {
                         RectangleSwitch(
@@ -181,11 +172,13 @@ private fun MnistDialogContent(
                         )
                     },
                 )
-                Spacer(modifier = Modifier.height(padding.inner(Scale.MEDIUM)))
                 MnistDialogRow(
                     textContent = {
-                        Text("Realtime Computation")
-                        Help()
+                        Text(text = "Realtime Computation")
+                        HelpTip(
+                            popupAlignment = Alignment.CenterEnd,
+                            popupContent = { Text(text = "TODO") },
+                        )  // TODO
                     },
                     interactionContent = {
                         RectangleSwitch(
@@ -195,46 +188,46 @@ private fun MnistDialogContent(
                         )
                     },
                 )
-                Spacer(modifier = Modifier.height(padding.inner(Scale.MEDIUM)))
                 MnistDialogRow(
                     textContent = {
-                        Text("SKaiNET")
-                        Help()
+                        Text(text = "SKaiNET")
+                        HelpTip(
+                            popupAlignment = Alignment.CenterEnd,
+                            popupContent = { Text(text = "TODO") },
+                        )  // TODO
                     },
                     interactionContent = {
                         RectangleButton(
                             scale = Scale.SMALL,
-                            onClick = { /* TODO */ },
+                            onClick = { uriHandler.openUri("https://github.com/SKaiNET-developers/SKaiNET") },
                         ) {
-                            Image(
-                                modifier = Modifier.size(component.height(Scale.SMALL) - 2 * padding(Scale.SMALL)),
-                                bitmap = imageResource(Res.drawable.github_white),
+                            PixelImage(
+                                modifier = Modifier.size(component.icon(Scale.SMALL)),
+                                resource = Res.drawable.github_white,
                                 contentDescription = "GitHub Icon",
-                                contentScale = ContentScale.Fit,
-                                filterQuality = FilterQuality.None,
                             )
                             Spacer(modifier = Modifier.width(padding.inner(Scale.SMALL)))
                             Text(text = "View")
                         }
                     },
                 )
-                Spacer(modifier = Modifier.height(padding.inner(Scale.MEDIUM)))
                 MnistDialogRow(
                     textContent = {
-                        Text("Source Code")
-                        Help()
+                        Text(text = "Source Code")
+                        HelpTip(
+                            popupAlignment = Alignment.CenterEnd,
+                            popupContent = { Text(text = "TODO") },
+                        )  // TODO
                     },
                     interactionContent = {
                         RectangleButton(
                             scale = Scale.SMALL,
-                            onClick = { /* TODO */ },
+                            onClick = { uriHandler.openUri("https://github.com/jtaeyeon05/kmp-mnist") },
                         ) {
-                            Image(
-                                modifier = Modifier.size(component.height(Scale.SMALL) - 2 * padding(Scale.SMALL)),
-                                bitmap = imageResource(Res.drawable.github_white),
+                            PixelImage(
+                                modifier = Modifier.size(component.icon(Scale.SMALL)),
+                                resource = Res.drawable.github_white,
                                 contentDescription = "GitHub Icon",
-                                contentScale = ContentScale.Fit,
-                                filterQuality = FilterQuality.None,
                             )
                             Spacer(modifier = Modifier.width(padding.inner(Scale.SMALL)))
                             Text(text = "View")
@@ -276,6 +269,3 @@ private fun MnistDialogRow(
         }
     }
 }
-
-@Composable
-private fun Help() {}

@@ -34,6 +34,7 @@ class LayoutConstraints private constructor(
         private val small: Dp,
         private val medium: Dp,
         private val large: Dp,
+
         private val innerSmall: Dp,
         private val innerMedium: Dp,
         private val innerLarge: Dp,
@@ -43,6 +44,7 @@ class LayoutConstraints private constructor(
             Scale.MEDIUM -> medium
             Scale.LARGE -> large
         }
+
         fun inner(scale: Scale) = when (scale) {
             Scale.SMALL -> innerSmall
             Scale.MEDIUM -> innerMedium
@@ -83,11 +85,21 @@ class LayoutConstraints private constructor(
         private val smallHeight: Dp,
         private val mediumHeight: Dp,
         private val largeHeight: Dp,
+
+        private val smallIcon: Dp,
+        private val mediumIcon: Dp,
+        private val largeIcon: Dp,
     ) {
         fun height(scale: Scale) = when (scale) {
             Scale.SMALL -> smallHeight
             Scale.MEDIUM -> mediumHeight
             Scale.LARGE -> largeHeight
+        }
+
+        fun icon(scale: Scale) = when (scale) {
+            Scale.SMALL -> smallIcon
+            Scale.MEDIUM -> mediumIcon
+            Scale.LARGE -> largeIcon
         }
     }
 
@@ -201,6 +213,10 @@ class LayoutConstraints private constructor(
                     smallHeight = base * 0.06f,
                     mediumHeight = base * 0.08f,
                     largeHeight = base * 0.10f,
+
+                    smallIcon = base * 0.02f,
+                    mediumIcon = base * 0.04f,
+                    largeIcon = base * 0.06f,
                 )
             }
 

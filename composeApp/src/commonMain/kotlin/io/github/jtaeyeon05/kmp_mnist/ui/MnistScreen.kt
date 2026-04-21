@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.ml.argmax
 import io.github.jtaeyeon05.kmp_mnist.ml.softmax
+import io.github.jtaeyeon05.kmp_mnist.tappable
 import io.github.jtaeyeon05.kmp_mnist.ui.component.LoadingBox
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
@@ -39,7 +39,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun MnistScreen(
-    viewModel: MnistViewModel = rememberSaveable { MnistViewModel() }
+    viewModel: MnistViewModel = remember { MnistViewModel() }
 ) {
     LocalLayoutConstraints.current.run {
         // CellBoard
@@ -74,17 +74,13 @@ fun MnistScreen(
                             },
                         )
                     }
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { offset ->
-                                val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
-                                val x = (viewModel.cellSize * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
-                                val y = (viewModel.cellSize * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
+                    .tappable { offset ->
+                        val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
+                        val x = (viewModel.cellSize * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
+                        val y = (viewModel.cellSize * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
-                                viewModel.draw(x = x, y = y)
-                                viewModel.predict()
-                            },
-                        )
+                        viewModel.draw(x = x, y = y)
+                        viewModel.predict()
                     }
                     .padding(padding(Scale.LARGE))
                     .size(component.cellBoard)
