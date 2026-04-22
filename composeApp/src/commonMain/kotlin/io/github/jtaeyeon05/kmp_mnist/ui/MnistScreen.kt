@@ -7,11 +7,13 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
@@ -33,7 +37,6 @@ import io.github.jtaeyeon05.kmp_mnist.ui.component.LoadingBox
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
-import sk.ainet.lang.tensor.pprint
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -135,32 +138,85 @@ fun MnistScreen(
                 modifier = Modifier
                     .padding(padding(Scale.LARGE))
                     .size(component.predictBoard)
-                    .background(
-                        color = MaterialTheme.colorScheme.background
-                    )
+                    .background(MaterialTheme.colorScheme.background)
                     .border(
                         width = border(Scale.MEDIUM),
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     .padding(border(Scale.MEDIUM))
                     .align(if (screen.isVertical) Alignment.BottomCenter else Alignment.CenterEnd),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = when {
-                        viewModel.prediction == null -> "Prediction"
-                        else -> {
-                            """
-                                ${argmax(viewModel.prediction!!)}
-                                ${softmax(viewModel.prediction!!).joinToString("-") { "${(100f * it).roundToInt()}%" }}
-                                ${viewModel.prediction!!.pprint()}
-                            """.trimIndent()
+                val softmax = if (viewModel.prediction != null) softmax(viewModel.prediction!!) else FloatArray(10) { 0f }
+                val result = if (viewModel.prediction != null) argmax(viewModel.prediction!!).let { if (softmax[it] >= 0.75f) it else null } else null
+                val (rows, columns) = (if (screen.isVertical) 2 else 5) to (if (screen.isVertical) 5 else 2)
+
+                Column {
+                    for (i1 in 0..< rows) {
+                        Row {
+                            for (i2 in 0..< columns) {
+                                val index = (i1 * rows + i2 + 1) % 10
+                                Column(
+                                    modifier = Modifier
+                                        .size(component.predictItem)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.onBackground
+                                                .copy(alpha = 0.5f * softmax[index])
+                                                .compositeOver(MaterialTheme.colorScheme.background),
+                                        )
+                                        .border(
+                                            width = border(Scale.MEDIUM),
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                        ),
+                                    verticalArrangement = Arrangement.spacedBy(
+                                        space = padding.inner(Scale.SMALL),
+                                        alignment = Alignment.CenterVertically
+                                    ),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    val textColor = if (index == result) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+                                    Text(
+                                        text = "",
+                                        style = LocalTextStyle.current.copy(
+                                            fontSize = typography(Scale.MEDIUM).sp,
+                                            lineHeight = typography(Scale.MEDIUM).lineSp,
+                                            lineHeightStyle = LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            ),
+                                        )
+                                    )
+                                    Text(
+                                        text = "$index",
+                                        style = LocalTextStyle.current.copy(
+                                            color = textColor,
+                                            textAlign = TextAlign.Center,
+                                            fontSize = typography(Scale.LARGE).sp,
+                                            lineHeight = typography(Scale.LARGE).lineSp,
+                                            lineHeightStyle = LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            ),
+                                        )
+                                    )
+                                    Text(
+                                        text = "${(100 * softmax[index]).roundToInt()}%",
+                                        style = LocalTextStyle.current.copy(
+                                            color = textColor,
+                                            textAlign = TextAlign.Center,
+                                            fontSize = typography(Scale.MEDIUM).sp,
+                                            lineHeight = typography(Scale.MEDIUM).lineSp,
+                                            lineHeightStyle = LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            ),
+                                        )
+                                    )
+                                }
+                            }
                         }
-                    },
-                    fontSize = typography(Scale.MEDIUM).sp,
-                    lineHeight = typography(Scale.MEDIUM).sp,
-                    textAlign = TextAlign.Center,
-                )
+                    }
+                }
             }
 
             // Toolbar

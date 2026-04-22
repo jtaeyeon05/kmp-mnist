@@ -45,6 +45,7 @@ class MnistViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             initializeMnistModel()
+            predict()
             isModelLoaded = true
         }
     }

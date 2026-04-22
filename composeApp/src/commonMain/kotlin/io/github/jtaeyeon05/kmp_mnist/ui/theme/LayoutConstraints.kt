@@ -79,6 +79,7 @@ class LayoutConstraints private constructor(
 
     data class Component(
         val cellBoard: Dp,
+        val predictItem: Dp,
         val predictBoard: DpSize,
         val dialog: DpSize,
 
@@ -160,24 +161,33 @@ class LayoutConstraints private constructor(
             val component = run {
                 val availableWidth = screen.width - 2 * padding(Scale.LARGE)
                 val availableHeight = screen.height - 2 * padding(Scale.LARGE)
+                val paddingBetweenCellAndPredict = padding(Scale.MEDIUM)
 
                 val cellBoard: Dp
+                val predictItem: Dp
                 val predictBoard: DpSize
                 val dialog: DpSize
 
                 if (screen.isVertical) {
-                    if (availableWidth <= availableHeight - 2 * (0.2f * availableHeight + padding(Scale.MEDIUM))) {
-                        cellBoard = availableWidth
+                    val estimatedPredictBoardWidth = screen.width - 2 * padding(Scale.LARGE)
+                    val estimatedPredictBoardHeight = 0.5f * screen.height - 0.5f * (screen.width - 2 * padding(Scale.LARGE)) - paddingBetweenCellAndPredict - padding(Scale.LARGE)
+
+                    if (estimatedPredictBoardWidth >= estimatedPredictBoardHeight * 5f / 2f) {
+                        // 기대보다 여유 높이가 적은 경우
+                        val boardBase = 0.5f * screen.height - paddingBetweenCellAndPredict - padding(Scale.LARGE)
+                        cellBoard = 2f * 5f / 9f * boardBase
+                        predictItem = 2f / 9f * boardBase
                         predictBoard = DpSize(
-                            width = cellBoard,
-                            height = 0.5f * (availableHeight - cellBoard) - padding(Scale.MEDIUM),
+                            width = 5f * predictItem,
+                            height = 2f * predictItem,
                         )
                     } else {
-                        val outputBoardHeight = 0.2f * availableHeight
-                        cellBoard = availableHeight - 2 * (0.2f * availableHeight + padding(Scale.MEDIUM))
+                        // 기대보다 여유 높이가 많은 경우
+                        cellBoard = screen.width - 2 * padding(Scale.LARGE)
+                        predictItem = 0.2f * cellBoard
                         predictBoard = DpSize(
-                            width = cellBoard,
-                            height = outputBoardHeight,
+                            width = 5f * predictItem,
+                            height = 2f * predictItem,
                         )
                     }
                     dialog = DpSize(
@@ -185,18 +195,25 @@ class LayoutConstraints private constructor(
                         height = min(availableHeight, base * 1.5f),
                     )
                 } else {
-                    if (availableHeight <= availableWidth - 2 * (0.2f * availableWidth + padding(Scale.MEDIUM))) {
-                        cellBoard = availableHeight
+                    val estimatedPredictBoardWidth = 0.5f * screen.width - 0.5f * (screen.height - 2 * padding(Scale.LARGE)) - paddingBetweenCellAndPredict - padding(Scale.LARGE)
+                    val estimatedPredictBoardHeight = screen.height - 2 * padding(Scale.LARGE)
+
+                    if (estimatedPredictBoardHeight >= estimatedPredictBoardWidth * 5f / 2f) {
+                        // 기대보다 여유 너비가 적은 경우
+                        val boardBase = 0.5f * screen.width - paddingBetweenCellAndPredict - padding(Scale.LARGE)
+                        cellBoard = 2f * 5f / 9f * boardBase
+                        predictItem = 2f / 9f * boardBase
                         predictBoard = DpSize(
-                            width = 0.5f * (availableWidth - cellBoard) - padding(Scale.MEDIUM),
-                            height = cellBoard,
+                            width = 2f * predictItem,
+                            height = 5f * predictItem,
                         )
                     } else {
-                        val outputBoardWidth = 0.2f * availableWidth
-                        cellBoard = availableWidth - 2 * (0.2f * availableWidth + padding(Scale.MEDIUM))
+                        // 기대보다 여유 너비가 많은 경우
+                        cellBoard = screen.height - 2 * padding(Scale.LARGE)
+                        predictItem = 0.2f * cellBoard
                         predictBoard = DpSize(
-                            width = outputBoardWidth,
-                            height = cellBoard,
+                            width = 2f * predictItem,
+                            height = 5f * predictItem,
                         )
                     }
                     dialog = DpSize(
@@ -207,6 +224,7 @@ class LayoutConstraints private constructor(
 
                 Component(
                     cellBoard = cellBoard,
+                    predictItem = predictItem,
                     predictBoard = predictBoard,
                     dialog = dialog,
 
