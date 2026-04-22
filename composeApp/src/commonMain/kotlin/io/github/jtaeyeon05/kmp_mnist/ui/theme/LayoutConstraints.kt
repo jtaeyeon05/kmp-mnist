@@ -169,53 +169,33 @@ class LayoutConstraints private constructor(
                 val dialog: DpSize
 
                 if (screen.isVertical) {
-                    val estimatedPredictBoardWidth = screen.width - 2 * padding(Scale.LARGE)
-                    val estimatedPredictBoardHeight = 0.5f * screen.height - 0.5f * (screen.width - 2 * padding(Scale.LARGE)) - paddingBetweenCellAndPredict - padding(Scale.LARGE)
+                    val maxPByWidth = 1f / 5f * availableWidth
+                    val maxPByHeight = 1f / (2 * 2f + 5f) * (availableHeight - 2f * paddingBetweenCellAndPredict)
+                    val p = min(maxPByWidth, maxPByHeight)
 
-                    if (estimatedPredictBoardWidth >= estimatedPredictBoardHeight * 5f / 2f) {
-                        // 기대보다 여유 높이가 적은 경우
-                        val boardBase = 0.5f * screen.height - paddingBetweenCellAndPredict - padding(Scale.LARGE)
-                        cellBoard = 2f * 5f / 9f * boardBase
-                        predictItem = 2f / 9f * boardBase
-                        predictBoard = DpSize(
-                            width = 5f * predictItem,
-                            height = 2f * predictItem,
-                        )
-                    } else {
-                        // 기대보다 여유 높이가 많은 경우
-                        cellBoard = screen.width - 2 * padding(Scale.LARGE)
-                        predictItem = 0.2f * cellBoard
-                        predictBoard = DpSize(
-                            width = 5f * predictItem,
-                            height = 2f * predictItem,
-                        )
-                    }
+                    cellBoard = 5f * p
+                    predictItem = p
+                    predictBoard = DpSize(
+                        width = 5f * predictItem,
+                        height = 2f * predictItem,
+                    )
+
                     dialog = DpSize(
                         width = availableWidth,
                         height = min(availableHeight, base * 1.5f),
                     )
                 } else {
-                    val estimatedPredictBoardWidth = 0.5f * screen.width - 0.5f * (screen.height - 2 * padding(Scale.LARGE)) - paddingBetweenCellAndPredict - padding(Scale.LARGE)
-                    val estimatedPredictBoardHeight = screen.height - 2 * padding(Scale.LARGE)
+                    val maxPByWidth = 1f / (2 * 2f + 5f) * (availableWidth - 2f * paddingBetweenCellAndPredict)
+                    val maxPByHeight = 1f / 5f * availableHeight
+                    val p = min(maxPByWidth, maxPByHeight)
 
-                    if (estimatedPredictBoardHeight >= estimatedPredictBoardWidth * 5f / 2f) {
-                        // 기대보다 여유 너비가 적은 경우
-                        val boardBase = 0.5f * screen.width - paddingBetweenCellAndPredict - padding(Scale.LARGE)
-                        cellBoard = 2f * 5f / 9f * boardBase
-                        predictItem = 2f / 9f * boardBase
-                        predictBoard = DpSize(
-                            width = 2f * predictItem,
-                            height = 5f * predictItem,
-                        )
-                    } else {
-                        // 기대보다 여유 너비가 많은 경우
-                        cellBoard = screen.height - 2 * padding(Scale.LARGE)
-                        predictItem = 0.2f * cellBoard
-                        predictBoard = DpSize(
-                            width = 2f * predictItem,
-                            height = 5f * predictItem,
-                        )
-                    }
+                    cellBoard = 5f * p
+                    predictItem = p
+                    predictBoard = DpSize(
+                        width = 2f * predictItem,
+                        height = 5f * predictItem,
+                    )
+
                     dialog = DpSize(
                         width = min(availableWidth, base * 0.8f),
                         height = availableHeight,

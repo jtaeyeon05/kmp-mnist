@@ -8,15 +8,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.ml.argmax
@@ -110,10 +115,10 @@ fun MnistScreen(
                         width = border(Scale.MEDIUM),
                         color = MaterialTheme.colorScheme.onBackground,
                     )
-                    .padding(border(Scale.MEDIUM))
+                    .padding(border(Scale.MEDIUM) - border(Scale.SMALL))
                     .align(Alignment.Center)
             ) {
-                val cellPx = (component.cellBoard - 2 * border(Scale.MEDIUM)).toPx() / viewModel.cellSize.toFloat()
+                val cellPx = (component.cellBoard - 2 * (border(Scale.MEDIUM) - border(Scale.SMALL))).toPx() / viewModel.cellSize.toFloat()
                 for (y in 0 ..< viewModel.cellSize) {
                     for (x in 0 ..< viewModel.cellSize) {
                         // Cell
@@ -143,56 +148,45 @@ fun MnistScreen(
                         width = border(Scale.MEDIUM),
                         color = MaterialTheme.colorScheme.onBackground,
                     )
-                    .padding(border(Scale.MEDIUM))
                     .align(if (screen.isVertical) Alignment.BottomCenter else Alignment.CenterEnd),
                 contentAlignment = Alignment.Center,
             ) {
-                val softmax = if (viewModel.prediction != null) softmax(viewModel.prediction!!) else FloatArray(10) { 0f }
-                val result = if (viewModel.prediction != null) argmax(viewModel.prediction!!).let { if (softmax[it] >= 0.75f) it else null } else null
+                val softmax by derivedStateOf { if (viewModel.prediction != null) softmax(viewModel.prediction!!) else FloatArray(10) { 0f } }
+                val result by derivedStateOf { if (viewModel.prediction != null) argmax(viewModel.prediction!!).let { if (softmax[it] >= 0.75f) it else null } else null }
                 val (rows, columns) = (if (screen.isVertical) 2 else 5) to (if (screen.isVertical) 5 else 2)
 
                 Column {
                     for (i1 in 0..< rows) {
                         Row {
                             for (i2 in 0..< columns) {
-                                val index = (i1 * rows + i2 + 1) % 10
+                                // PredictItem
+                                val index = (i1 * columns + i2 + 1) % 10
                                 Column(
                                     modifier = Modifier
                                         .size(component.predictItem)
                                         .background(
                                             color = MaterialTheme.colorScheme.onBackground
-                                                .copy(alpha = 0.5f * softmax[index])
+                                                .copy(alpha = 0.75f * softmax[index])
                                                 .compositeOver(MaterialTheme.colorScheme.background),
                                         )
                                         .border(
-                                            width = border(Scale.MEDIUM),
+                                            width = 0.5f * border(Scale.MEDIUM),  // Border 끼리 겹치는 것을 고려
                                             color = MaterialTheme.colorScheme.onBackground,
-                                        ),
-                                    verticalArrangement = Arrangement.spacedBy(
-                                        space = padding.inner(Scale.SMALL),
-                                        alignment = Alignment.CenterVertically
-                                    ),
+                                        )
+                                        .padding(padding.inner(Scale.MEDIUM) + 0.5f * border(Scale.MEDIUM)),
+                                    verticalArrangement = Arrangement.spacedBy(padding.inner(Scale.SMALL)),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
                                     val textColor = if (index == result) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+                                    Spacer(modifier = Modifier.weight(typography(Scale.SMALL).sp.value))
                                     Text(
-                                        text = "",
-                                        style = LocalTextStyle.current.copy(
-                                            fontSize = typography(Scale.MEDIUM).sp,
-                                            lineHeight = typography(Scale.MEDIUM).lineSp,
-                                            lineHeightStyle = LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            ),
-                                        )
-                                    )
-                                    Text(
+                                        modifier = Modifier.weight(typography(Scale.MEDIUM).sp.value),
                                         text = "$index",
+                                        autoSize = TextAutoSize.StepBased(),
+                                        lineHeight = typography.lineHeight.em,
                                         style = LocalTextStyle.current.copy(
                                             color = textColor,
                                             textAlign = TextAlign.Center,
-                                            fontSize = typography(Scale.LARGE).sp,
-                                            lineHeight = typography(Scale.LARGE).lineSp,
                                             lineHeightStyle = LineHeightStyle(
                                                 alignment = LineHeightStyle.Alignment.Center,
                                                 trim = LineHeightStyle.Trim.None
@@ -200,12 +194,13 @@ fun MnistScreen(
                                         )
                                     )
                                     Text(
+                                        modifier = Modifier.weight(typography(Scale.SMALL).sp.value),
                                         text = "${(100 * softmax[index]).roundToInt()}%",
+                                        autoSize = TextAutoSize.StepBased(),
+                                        lineHeight = typography.lineHeight.em,
                                         style = LocalTextStyle.current.copy(
-                                            color = textColor,
-                                            textAlign = TextAlign.Center,
-                                            fontSize = typography(Scale.MEDIUM).sp,
-                                            lineHeight = typography(Scale.MEDIUM).lineSp,
+                                            color = textColor.copy(alpha = 0.5f),
+                                            lineHeight = typography(Scale.SMALL).lineSp,
                                             lineHeightStyle = LineHeightStyle(
                                                 alignment = LineHeightStyle.Alignment.Center,
                                                 trim = LineHeightStyle.Trim.None

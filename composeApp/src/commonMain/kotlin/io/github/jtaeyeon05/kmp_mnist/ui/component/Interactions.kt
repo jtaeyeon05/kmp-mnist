@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.tappable
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
@@ -122,10 +121,6 @@ fun RectangleSwitch(
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
                         trim = LineHeightStyle.Trim.None
-                    ),
-                    textIndent = TextIndent(
-                        firstLine = 1f / 12f * typography(scale).sp,
-                        restLine =  1f / 12f * typography(scale).sp,
                     ),
                 ),
             ) {

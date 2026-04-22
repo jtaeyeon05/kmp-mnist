@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -150,7 +151,10 @@ fun HelpTip(
                                             2 * min(imageCenter, windowSize.width - imageCenter)
                                         }
                                     }
-                                    widthIn(max = density.run { maxWidth.toDp() })
+
+                                    this
+                                        .alpha(if (maxWidth > 0f) 1f else 0f)
+                                        .widthIn(max = density.run { maxWidth.toDp() })
                                 }
                             )
                             .padding(popupMargin)
