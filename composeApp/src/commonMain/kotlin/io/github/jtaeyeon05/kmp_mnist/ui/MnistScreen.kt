@@ -34,6 +34,7 @@ import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import sk.ainet.lang.tensor.pprint
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
@@ -55,14 +56,29 @@ fun MnistScreen(
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
                                 val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
-                                val x = (viewModel.cellSize * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
-                                val y = (viewModel.cellSize * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
+                                val x1 = (viewModel.cellSize * (touchPoint.x - paddingPx) / (size.width - 2 * paddingPx)).toInt()
+                                val y1 = (viewModel.cellSize * (touchPoint.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
-                                if (lastPoint != x to y) {
-                                    viewModel.draw(x = x, y = y)
-                                    lastPoint = x to y
+                                if (lastPoint != null) {
+                                    val (x0, y0) = lastPoint!!
+
+                                    if (x0 != x1 || y0 != y1) {
+                                        val steps = maxOf(abs(x1 - x0), abs(y1 - y0))
+                                        for (i in 0 .. steps) {
+                                            val x = x0 + i * (x1 - x0) / steps
+                                            val y = y0 + i * (y1 - y0) / steps
+                                            viewModel.draw(x = x, y = y)
+                                        }
+
+                                        lastPoint = x1 to y1
+                                        if (viewModel.realtimeMode) viewModel.predict(realtime = true)
+                                    }
+                                } else {
+                                    viewModel.draw(x = x1, y = y1)
+
+                                    lastPoint = x1 to y1
+                                    if (viewModel.realtimeMode) viewModel.predict(realtime = true)
                                 }
-                                if (viewModel.realtimeMode) viewModel.predict(realtime = true)
                             },
                             onDragCancel = {
                                 lastPoint = null
