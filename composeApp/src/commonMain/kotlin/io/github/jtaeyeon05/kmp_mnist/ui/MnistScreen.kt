@@ -62,7 +62,7 @@ fun MnistScreen(
                                     viewModel.draw(x = x, y = y)
                                     lastPoint = x to y
                                 }
-                                if (viewModel.realtimeMode) viewModel.predict()
+                                if (viewModel.realtimeMode) viewModel.predict(realtime = true)
                             },
                             onDragCancel = {
                                 lastPoint = null

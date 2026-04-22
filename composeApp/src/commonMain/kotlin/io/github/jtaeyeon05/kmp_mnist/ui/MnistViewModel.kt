@@ -46,7 +46,8 @@ class MnistViewModel: ViewModel() {
         }
     }
 
-    fun predict() {
+    fun predict(realtime: Boolean = false) {
+        if (realtime && predictJob?.isActive == true) return
         predictJob?.cancel()
         predictJob = viewModelScope.launch(Dispatchers.Default) {
             isPredicting = true
