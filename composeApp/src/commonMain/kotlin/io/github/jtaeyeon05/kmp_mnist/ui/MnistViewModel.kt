@@ -12,9 +12,11 @@ import io.github.jtaeyeon05.kmp_mnist.ml.predictMnistModel
 import io.github.jtaeyeon05.kmp_mnist.ml.toMnistInputTensor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sk.ainet.lang.tensor.Tensor
 import sk.ainet.lang.types.FP32
+import kotlin.time.Duration.Companion.milliseconds
 
 
 enum class BrushMode { PENCIL, SMALL_BRUSH, LARGE_BRUSH }
@@ -36,6 +38,7 @@ class MnistViewModel: ViewModel() {
     val isLoading by derivedStateOf { !isModelLoaded || isPredicting }
 
     private var predictJob: Job? = null
+    private var loadingJob: Job? = null
     private var isModelLoaded by mutableStateOf(false)
     private var isPredicting by mutableStateOf(false)
 
@@ -49,12 +52,19 @@ class MnistViewModel: ViewModel() {
     fun predict(realtime: Boolean = false) {
         if (realtime && predictJob?.isActive == true) return
         predictJob?.cancel()
+        loadingJob?.cancel()
+
+        isPredicting = true
         predictJob = viewModelScope.launch(Dispatchers.Default) {
-            isPredicting = true
             try {
                 prediction = predictMnistModel(cellMap.toMnistInputTensor())
             } finally {
-                if (predictJob == coroutineContext[Job]) isPredicting = false
+                if (predictJob == coroutineContext[Job]) {
+                    loadingJob = viewModelScope.launch {
+                        delay(50.milliseconds)
+                        isPredicting = false
+                    }
+                }
             }
         }
     }

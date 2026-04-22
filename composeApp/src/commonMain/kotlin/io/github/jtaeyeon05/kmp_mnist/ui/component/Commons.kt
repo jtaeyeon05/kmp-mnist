@@ -79,7 +79,7 @@ fun HelpTip(
 
         PixelImage(
             modifier = tipModifier
-                .size(component.icon(Scale.MEDIUM))
+                .size(component.icon(Scale.SMALL))
                 .onGloballyPositioned {
                     imageSize = it.size
                     imagePosition = IntOffset(
@@ -155,7 +155,7 @@ fun HelpTip(
                             )
                             .padding(popupMargin)
                             .background(MaterialTheme.colorScheme.surfaceBright)
-                            .padding(padding.inner(Scale.SMALL))
+                            .padding(padding(Scale.SMALL))
                     ) {
                         CompositionLocalProvider(
                             LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,

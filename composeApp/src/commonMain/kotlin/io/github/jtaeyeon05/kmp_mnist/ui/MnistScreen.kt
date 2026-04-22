@@ -157,8 +157,8 @@ fun MnistScreen(
                             """.trimIndent()
                         }
                     },
-                    fontSize = typography(Scale.SMALL).sp,
-                    lineHeight = typography(Scale.SMALL).sp,
+                    fontSize = typography(Scale.MEDIUM).sp,
+                    lineHeight = typography(Scale.MEDIUM).sp,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -167,12 +167,13 @@ fun MnistScreen(
             Column(
                 modifier = Modifier
                     .padding(padding(Scale.SMALL))
-                    .width(component.height(Scale.MEDIUM))
+                    .width(component.height(Scale.LARGE))
                     .align(Alignment.TopStart),
-                verticalArrangement = Arrangement.spacedBy(padding.inner(Scale.MEDIUM)),
+                verticalArrangement = Arrangement.spacedBy(padding(Scale.SMALL)),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 RectangleTextButton(
+                    scale = Scale.LARGE,
                     onClick = { viewModel.toggleBrushMode() },
                 ) {
                     Text(
@@ -189,6 +190,7 @@ fun MnistScreen(
                     )
                 }
                 RectangleTextButton(
+                    scale = Scale.LARGE,
                     onClick = {
                         viewModel.clear()
                         viewModel.predict()
@@ -197,12 +199,15 @@ fun MnistScreen(
                     Text(text = "⟲")
                 }
                 RectangleTextButton(
+                    scale = Scale.LARGE,
                     onClick = { viewModel.showDialog() },
                 ) {
                     Text(text = "?")
                 }
                 if (viewModel.isLoading) {
-                    LoadingBox()
+                    LoadingBox(
+                        scale = Scale.LARGE,
+                    )
                 }
             }
 
@@ -212,8 +217,8 @@ fun MnistScreen(
                     .padding(padding(Scale.SMALL))
                     .align(Alignment.TopEnd),
                 text = "${BuildInfo.RELEASE_NAME} [${BuildInfo.RELEASE_CODE}]\n${BuildInfo.BUILD_NUMBER}",
-                fontSize = typography(Scale.SMALL).sp,
-                lineHeight = typography(Scale.SMALL).sp,
+                fontSize = typography(Scale.MEDIUM).sp,
+                lineHeight = typography(Scale.MEDIUM).sp,
                 textAlign = TextAlign.End,
             )
 

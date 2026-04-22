@@ -111,8 +111,8 @@ private fun MnistDialogContent(
                     text = "KMP MNIST",
                     style = LocalTextStyle.current.copy(
                         textAlign = TextAlign.Center,
-                        fontSize = typography(Scale.MEDIUM).sp,
-                        lineHeight = typography(Scale.MEDIUM).lineSp,
+                        fontSize = typography(Scale.LARGE).sp,
+                        lineHeight = typography(Scale.LARGE).lineSp,
                         lineHeightStyle = LineHeightStyle(
                             alignment = LineHeightStyle.Alignment.Center,
                             trim = LineHeightStyle.Trim.None
@@ -121,6 +121,7 @@ private fun MnistDialogContent(
                 )
                 RectangleTextButton(
                     modifier = Modifier.align(Alignment.CenterEnd),
+                    scale = Scale.LARGE,
                     onClick = onDismissRequest,
                 ) {
                     Text(text = "X")
@@ -135,7 +136,7 @@ private fun MnistDialogContent(
                         start = padding(Scale.SMALL),
                         end = padding(Scale.SMALL),
                     ),
-                verticalArrangement = Arrangement.spacedBy(padding.inner(Scale.MEDIUM))
+                verticalArrangement = Arrangement.spacedBy(padding(Scale.SMALL))
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
@@ -169,7 +170,7 @@ private fun MnistDialogContent(
                     },
                     interactionContent = {
                         RectangleSwitch(
-                            scale = Scale.SMALL,
+                            scale = Scale.MEDIUM,
                             checked = viewModel.cellSize == 28,
                             onCheckedChange = {
                                 viewModel.updateCellSize(
@@ -198,7 +199,7 @@ private fun MnistDialogContent(
                     },
                     interactionContent = {
                         RectangleSwitch(
-                            scale = Scale.SMALL,
+                            scale = Scale.MEDIUM,
                             checked = viewModel.realtimeMode,
                             onCheckedChange = { viewModel.toggleRealtimeMode() },
                         )
@@ -214,7 +215,7 @@ private fun MnistDialogContent(
                     },
                     interactionContent = {
                         RectangleButton(
-                            scale = Scale.SMALL,
+                            scale = Scale.MEDIUM,
                             onClick = { uriHandler.openUri("https://github.com/SKaiNET-developers/SKaiNET") },
                         ) {
                             PixelImage(
@@ -222,7 +223,7 @@ private fun MnistDialogContent(
                                 resource = Res.drawable.ic_github_white,
                                 contentDescription = "GitHub Icon",
                             )
-                            Spacer(modifier = Modifier.width(padding.inner(Scale.SMALL)))
+                            Spacer(modifier = Modifier.width(padding.inner(Scale.MEDIUM)))
                             Text(text = "View")
                         }
                     },
@@ -237,7 +238,7 @@ private fun MnistDialogContent(
                     },
                     interactionContent = {
                         RectangleButton(
-                            scale = Scale.SMALL,
+                            scale = Scale.MEDIUM,
                             onClick = { uriHandler.openUri("https://github.com/jtaeyeon05/kmp-mnist") },
                         ) {
                             PixelImage(
@@ -245,7 +246,7 @@ private fun MnistDialogContent(
                                 resource = Res.drawable.ic_github_white,
                                 contentDescription = "GitHub Icon",
                             )
-                            Spacer(modifier = Modifier.width(padding.inner(Scale.SMALL)))
+                            Spacer(modifier = Modifier.width(padding.inner(Scale.MEDIUM)))
                             Text(text = "View")
                         }
                     },
@@ -270,8 +271,8 @@ private fun MnistDialogRow(
             CompositionLocalProvider(
                 LocalTextStyle provides LocalTextStyle.current.copy(
                     textAlign = TextAlign.Start,
-                    fontSize = typography(Scale.MEDIUM).sp,
-                    lineHeight = typography(Scale.MEDIUM).lineSp,
+                    fontSize = typography(Scale.LARGE).sp,
+                    lineHeight = typography(Scale.LARGE).lineSp,
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
                         trim = LineHeightStyle.Trim.None

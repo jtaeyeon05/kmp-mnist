@@ -122,9 +122,9 @@ class LayoutConstraints private constructor(
                 small = base * 0.02f,
                 medium = base * 0.04f,
                 large = base * 0.08f,
-                innerSmall = base * 0.01f,
-                innerMedium = base * 0.02f,
-                innerLarge = base * 0.04f,
+                innerSmall = base * 0.005f,
+                innerMedium = base * 0.010f,
+                innerLarge = base * 0.020f,
             )
             val border = Border(
                 small = base * 0.002f,
@@ -135,17 +135,17 @@ class LayoutConstraints private constructor(
                 val lineHeight = 1.2f
 
                 val small = TypographySize(
-                    size = base * 0.02f,
+                    size = base * 0.016f,
                     lineHeight = lineHeight,
                     density = density,
                 )
                 val medium = TypographySize(
-                    size = base * 0.04f,
+                    size = base * 0.024f,
                     lineHeight = lineHeight,
                     density = density,
                 )
                 val large = TypographySize(
-                    size = base * 0.06f,
+                    size = base * 0.036f,
                     lineHeight = lineHeight,
                     density = density,
                 )
@@ -210,9 +210,9 @@ class LayoutConstraints private constructor(
                     predictBoard = predictBoard,
                     dialog = dialog,
 
-                    smallHeight = base * 0.06f,
-                    mediumHeight = base * 0.08f,
-                    largeHeight = base * 0.10f,
+                    smallHeight = base * 0.04f,
+                    mediumHeight = base * 0.06f,
+                    largeHeight = base * 0.08f,
 
                     smallIcon = base * 0.02f,
                     mediumIcon = base * 0.04f,

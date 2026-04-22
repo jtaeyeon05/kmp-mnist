@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.times
 import io.github.jtaeyeon05.kmp_mnist.tappable
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
-import io.github.jtaeyeon05.kmp_mnist.ui.theme.TypographySize.Companion.times
+
 
 @Composable
 fun RectangleButton(
@@ -58,8 +58,8 @@ fun RectangleButton(
                 LocalContentColor provides MaterialTheme.colorScheme.onBackground,
                 LocalTextStyle provides LocalTextStyle.current.copy(
                     textAlign = TextAlign.Start,
-                    fontSize = typography(scale).sp,
-                    lineHeight = typography(scale).lineSp,
+                    fontSize = 0.75f * typography(scale).sp,
+                    lineHeight = 0.75f * typography(scale).lineSp,
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
                         trim = LineHeightStyle.Trim.None
@@ -100,9 +100,7 @@ fun RectangleSwitch(
     offContent: @Composable (BoxScope.() -> Unit)? = null,
     onContent: @Composable (BoxScope.() -> Unit)? = null,
 ) {
-    // Hmm... I don't like this.
     LocalLayoutConstraints.current.run {
-        val typographySize = 0.75f * typography(scale)
         Row(
             modifier = modifier
                 .width(IntrinsicSize.Min)
@@ -119,15 +117,15 @@ fun RectangleSwitch(
                 LocalContentColor provides MaterialTheme.colorScheme.onBackground,
                 LocalTextStyle provides LocalTextStyle.current.copy(
                     textAlign = TextAlign.Center,
-                    fontSize = typographySize.sp,
-                    lineHeight = typographySize.lineSp,
+                    fontSize = typography(scale).sp,
+                    lineHeight = typography(scale).lineSp,
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
                         trim = LineHeightStyle.Trim.None
                     ),
                     textIndent = TextIndent(
-                        firstLine = 1f / 12f * typographySize.sp,
-                        restLine =  1f / 12f * typographySize.sp,
+                        firstLine = 1f / 12f * typography(scale).sp,
+                        restLine =  1f / 12f * typography(scale).sp,
                     ),
                 ),
             ) {
@@ -141,9 +139,9 @@ fun RectangleSwitch(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .widthIn(min = 2.4f * typographySize.dp)
+                            .widthIn(min = 2f * typography(scale).dp)
                             .padding(horizontal = padding.inner(scale))
-                            .padding(start = 1f / 12f * typographySize.dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
+                            .padding(start = 1f / 12f * typography(scale).dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
                         contentAlignment = Alignment.Center,
                     ) {
                         if (offContent != null) offContent()
@@ -159,9 +157,9 @@ fun RectangleSwitch(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .widthIn(min = 2.4f * typographySize.lineDp)
+                            .widthIn(min = 2f * typography(scale).dp)
                             .padding(horizontal = padding.inner(scale))
-                            .padding(start = 1f / 12f * typographySize.dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
+                            .padding(start = 1f / 12f * typography(scale).dp),  // Mona12 폰트의 오른쪽 여백에 대한 대응
                         contentAlignment = Alignment.Center
                     ) {
                         if (onContent != null) onContent()
