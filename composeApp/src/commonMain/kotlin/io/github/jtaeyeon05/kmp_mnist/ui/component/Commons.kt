@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -46,29 +47,31 @@ import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import io.github.jtaeyeon05.kmp_mnist.vertical
 import kmp_mnist.composeapp.generated.resources.Res
-import kmp_mnist.composeapp.generated.resources.question_circle_white
+import kmp_mnist.composeapp.generated.resources.ic_question_circle_white
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
+import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 
 @Composable
 fun HelpTip(
     tipModifier: Modifier = Modifier,
-    tipResource: DrawableResource = Res.drawable.question_circle_white,
+    tipResource: DrawableResource = Res.drawable.ic_question_circle_white,
     tipContentDescription: String? = "HelpTip",
     tipAlpha: Float = 0.5f,
 
     popupModifier: Modifier = Modifier,
     popupAlignment: Alignment = Alignment.TopCenter,
+    popupWidthLimits: Boolean = true,
     popupMargin: Dp = LocalLayoutConstraints.current.run { padding(Scale.SMALL) },
     popupContent: @Composable () -> Unit,
 ) {
     LocalLayoutConstraints.current.run {
         var showPopup by rememberSaveable { mutableStateOf(false) }
 
-        val popupMargin = LocalDensity.current.run { popupMargin.toPx().toInt() }
+        val density = LocalDensity.current
         var windowSize by remember { mutableStateOf(IntSize.Zero) }
         var popupSize by remember { mutableStateOf(IntSize.Zero) }
         var imageSize by remember { mutableStateOf(IntSize.Zero) }
@@ -121,13 +124,13 @@ fun HelpTip(
                             .onSizeChanged { popupSize = it }
                             .offset {
                                 val x = when (popupAlignment.horizontal) {
-                                    Alignment.Start -> imagePosition.x - popupSize.width - popupMargin  // Parent.Start == Popup.End
-                                    Alignment.End -> imagePosition.x + imageSize.width + popupMargin  // Parent.End == Popup.Start
+                                    Alignment.Start -> imagePosition.x - popupSize.width  // Parent.Start == Popup.End
+                                    Alignment.End -> imagePosition.x + imageSize.width  // Parent.End == Popup.Start
                                     else -> imagePosition.x + imageSize.width / 2 - popupSize.width / 2
                                 }
                                 val y = when (popupAlignment.vertical) {
-                                    Alignment.Top -> imagePosition.y - popupSize.height - popupSize.height - popupMargin  // Parent.Top == Popup.Bottom
-                                    Alignment.Bottom -> imagePosition.y + imageSize.height + popupMargin  // Parent.Bottom == Popup.Top
+                                    Alignment.Top -> imagePosition.y - popupSize.height - popupSize.height  // Parent.Top == Popup.Bottom
+                                    Alignment.Bottom -> imagePosition.y + imageSize.height  // Parent.Bottom == Popup.Top
                                     else -> imagePosition.y + imageSize.height / 2 - popupSize.height / 2
                                 }
 
@@ -136,13 +139,32 @@ fun HelpTip(
                                     y = y.coerceIn(0 .. windowSize.height - popupSize.height),
                                 )
                             }
+                            .applyIf(
+                                condition = popupWidthLimits,
+                                block = {
+                                    val maxWidth = when (popupAlignment.horizontal) {
+                                        Alignment.Start -> imagePosition.x
+                                        Alignment.End -> windowSize.width - imagePosition.x - imageSize.width
+                                        else -> {
+                                            val imageCenter = imagePosition.x + imageSize.width / 2
+                                            2 * min(imageCenter, windowSize.width - imageCenter)
+                                        }
+                                    }
+                                    widthIn(max = density.run { maxWidth.toDp() })
+                                }
+                            )
+                            .padding(popupMargin)
                             .background(MaterialTheme.colorScheme.surfaceBright)
                             .padding(padding.inner(Scale.SMALL))
                     ) {
                         CompositionLocalProvider(
                             LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,
                             LocalTextStyle provides LocalTextStyle.current.copy(
-                                textAlign = TextAlign.Center,
+                                textAlign = when (popupAlignment.horizontal) {
+                                    Alignment.Start -> TextAlign.End
+                                    Alignment.End -> TextAlign.Start
+                                    else -> TextAlign.Center
+                                },
                                 fontSize = typography(Scale.SMALL).sp,
                                 lineHeight = typography(Scale.SMALL).lineSp,
                                 lineHeightStyle = LineHeightStyle(
