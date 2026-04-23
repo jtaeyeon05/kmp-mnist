@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.2.1"
-val releaseCode = 29
+val releaseName = "1.2.2"
+val releaseCode = 30
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")
@@ -188,6 +188,21 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "io.github.jtaeyeon05.kmp_mnist"
             packageVersion = releaseName
+
+            windows {
+                iconFile.set(project.file("./src/jvmMain/resources/icon_windows.ico"))
+            }
+            macOS {
+                dockName = "KMP MNIST"
+                iconFile.set(project.file("./src/jvmMain/resources/icon_macos_padded.icns"))
+            }
+            linux {
+                iconFile.set(project.file("./src/jvmMain/resources/icon_linux.png"))
+            }
+
+            buildTypes.release.proguard {
+                configurationFiles.from(project.file("proguard-rules.pro"))
+            }
         }
     }
 }

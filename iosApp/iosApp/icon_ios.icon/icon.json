@@ -1,0 +1,37 @@
+{
+  "fill" : {
+    "solid" : "display-p3:0.07726,0.07726,0.07726,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "image-name" : "ic_kmp_mnist.svg",
+          "name" : "ic_kmp_mnist",
+          "position" : {
+            "scale" : 48,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

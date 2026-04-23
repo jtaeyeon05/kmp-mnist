@@ -7,7 +7,7 @@
 
 @font-face {
     font-family: 'Mona12';
-    src: url('./composeResources/kmp_mnist.composeapp.generated.resources/font/Mona12-Bold.ttf') format('truetype');
+    src: url('./composeResources/kmp_mnist.composeapp.generated.resources/font/Mona12_Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
