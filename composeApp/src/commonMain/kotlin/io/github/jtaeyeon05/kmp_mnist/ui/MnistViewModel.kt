@@ -77,31 +77,36 @@ class MnistViewModel: ViewModel() {
     }
 
     fun draw(x: Int, y: Int, brushMode: BrushMode = this.brushMode) {
+        val delta1 = 0.8f
+        val delta2 = 0.6f
+        val delta3 = 0.4f
+        val delta4 = 0.2f
+
         when (brushMode) {
             BrushMode.PENCIL -> {
-                updateCell(x = x, y = y, delta = 1.0f)
+                updateCell(x = x, y = y, delta = delta1)
             }
             BrushMode.SMALL_BRUSH -> {
-                updateCell(x = x, y = y, delta = 1.0f)
-                updateCell(x = x - 1, y = y, delta = 0.5f)
-                updateCell(x = x + 1, y = y, delta = 0.5f)
-                updateCell(x = x, y = y - 1, delta = 0.5f)
-                updateCell(x = x, y = y + 1, delta = 0.5f)
+                updateCell(x = x, y = y, delta = delta1)
+                updateCell(x = x - 1, y = y, delta = delta3)
+                updateCell(x = x + 1, y = y, delta = delta3)
+                updateCell(x = x, y = y - 1, delta = delta3)
+                updateCell(x = x, y = y + 1, delta = delta3)
             }
             BrushMode.LARGE_BRUSH -> {
-                updateCell(x, y, 1.00f)
-                updateCell(x - 1, y, 0.75f)
-                updateCell(x + 1, y, 0.75f)
-                updateCell(x, y - 1, 0.75f)
-                updateCell(x, y + 1, 0.75f)
-                updateCell(x - 1, y - 1, 0.50f)
-                updateCell(x + 1, y - 1, 0.50f)
-                updateCell(x - 1, y + 1, 0.50f)
-                updateCell(x + 1, y + 1, 0.50f)
-                updateCell(x - 2, y, 0.25f)
-                updateCell(x + 2, y, 0.25f)
-                updateCell(x, y - 2, 0.25f)
-                updateCell(x, y + 2, 0.25f)
+                updateCell(x = x, y = y, delta = delta1)
+                updateCell(x = x - 1, y = y, delta = delta2)
+                updateCell(x = x + 1, y = y, delta = delta2)
+                updateCell(x = x, y = y - 1, delta = delta2)
+                updateCell(x = x, y = y + 1, delta = delta2)
+                updateCell(x = x - 1, y = y - 1, delta = delta3)
+                updateCell(x = x + 1, y = y - 1, delta = delta3)
+                updateCell(x = x - 1, y = y + 1, delta = delta3)
+                updateCell(x = x + 1, y = y + 1, delta = delta3)
+                updateCell(x = x - 2, y = y, delta = delta4)
+                updateCell(x = x + 2, y = y, delta = delta4)
+                updateCell(x = x, y = y - 2, delta = delta4)
+                updateCell(x = x, y = y + 2, delta = delta4)
             }
         }
     }
@@ -114,7 +119,7 @@ class MnistViewModel: ViewModel() {
         }
     }
 
-    fun makeCellMap(cellSize: Int): SnapshotStateList<SnapshotStateList<Float>> {
+    private fun makeCellMap(cellSize: Int): SnapshotStateList<SnapshotStateList<Float>> {
         val cellSize = cellSize.coerceIn(1 .. 28)
         return SnapshotStateList(cellSize) {
             SnapshotStateList(cellSize) {
@@ -123,9 +128,41 @@ class MnistViewModel: ViewModel() {
         }
     }
 
+    private fun copyCellMap(toCellMap: SnapshotStateList<SnapshotStateList<Float>>, fromCellMap: SnapshotStateList<SnapshotStateList<Float>>): SnapshotStateList<SnapshotStateList<Float>> {
+        val toSize = toCellMap.size
+        val fromSize = fromCellMap.size
+
+        if (toSize < fromSize) {
+            val padding = (fromSize - toSize) / 2
+            for (y in 0 ..< toSize) {
+                for (x in 0 ..< toSize) {
+                    toCellMap[y][x] = fromCellMap[y + padding][x + padding]
+                }
+            }
+        } else if (toSize > fromSize) {
+            val padding = (toSize - fromSize) / 2
+            for (y in 0 ..< fromSize) {
+                for (x in 0 ..< fromSize) {
+                    toCellMap[y + padding][x + padding] = fromCellMap[y][x]
+                }
+            }
+        } else {
+            for (y in 0 ..< toSize) {
+                for (x in 0 ..< toSize) {
+                    toCellMap[y][x] = fromCellMap[y][x]
+                }
+            }
+        }
+
+        return toCellMap
+    }
+
     fun updateCellSize(cellSize: Int) {
         this.cellSize = cellSize.coerceIn(1 .. 28)
-        this.cellMap = makeCellMap(this.cellSize)
+        this.cellMap = copyCellMap(
+            toCellMap = makeCellMap(this.cellSize),
+            fromCellMap = this.cellMap,
+        )
     }
 
     fun toggleBrushMode() {

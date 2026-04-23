@@ -27,7 +27,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -198,7 +201,12 @@ fun PixelImage(
     Image(
         modifier = modifier.applyIf(
             condition = onClick != null,
-            block = { tappable { onClick!!() } }
+            block = {
+                this
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    .stylusHoverIcon(PointerIcon.Hand)
+                    .tappable { onClick!!() }
+            }
         ),
         bitmap = imageResource(resource),
         contentDescription = contentDescription,

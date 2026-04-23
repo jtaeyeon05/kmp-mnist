@@ -24,6 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
@@ -48,6 +51,8 @@ fun RectangleButton(
                     color = MaterialTheme.colorScheme.onBackground,
                     width = border(Scale.MEDIUM),
                 )
+                .pointerHoverIcon(PointerIcon.Hand)
+                .stylusHoverIcon(PointerIcon.Hand)
                 .tappable { onClick() }
                 .padding(padding(Scale.SMALL)),
             verticalAlignment = Alignment.CenterVertically,
@@ -109,6 +114,8 @@ fun RectangleSwitch(
                     color = MaterialTheme.colorScheme.onBackground,
                     width = border(Scale.MEDIUM),
                 )
+                .pointerHoverIcon(PointerIcon.Hand)
+                .stylusHoverIcon(PointerIcon.Hand)
                 .tappable { onCheckedChange(!checked) }
                 .padding(padding.inner(scale)),
         ) {
