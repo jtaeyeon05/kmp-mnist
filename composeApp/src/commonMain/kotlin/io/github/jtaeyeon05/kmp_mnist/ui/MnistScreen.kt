@@ -49,6 +49,7 @@ import io.github.jtaeyeon05.kmp_mnist.buildinfo.BuildInfo
 import io.github.jtaeyeon05.kmp_mnist.ml.argmax
 import io.github.jtaeyeon05.kmp_mnist.ml.softmax
 import io.github.jtaeyeon05.kmp_mnist.tappable
+import io.github.jtaeyeon05.kmp_mnist.toPrecision
 import io.github.jtaeyeon05.kmp_mnist.ui.component.LoadingBox
 import io.github.jtaeyeon05.kmp_mnist.ui.component.RectangleTextButton
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
@@ -214,7 +215,7 @@ fun MnistScreen(
                                     )
                                     Text(
                                         modifier = Modifier.weight(typography(Scale.SMALL).sp.value),
-                                        text = "${(100 * softmax[index]).roundToInt()}%",
+                                        text = "${(100f * softmax[index]).toPrecision(2)}%",
                                         autoSize = TextAutoSize.StepBased(),
                                         lineHeight = typography.lineHeight.em,
                                         style = LocalTextStyle.current.copy(

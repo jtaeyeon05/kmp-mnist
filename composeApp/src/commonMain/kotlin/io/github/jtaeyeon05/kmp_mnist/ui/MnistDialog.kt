@@ -170,9 +170,8 @@ private fun MnistDialogContent(
                             scale = Scale.MEDIUM,
                             checked = viewModel.cellSize == 28,
                             onCheckedChange = {
-                                viewModel.updateCellSize(
-                                    if (viewModel.cellSize == 28) 20 else 28
-                                )
+                                viewModel.updateCellSize(if (viewModel.cellSize == 28) 20 else 28)
+                                viewModel.predict()
                             },
                             offContent = { Text(text = "20") },
                             onContent = { Text(text = "28") },
@@ -198,7 +197,10 @@ private fun MnistDialogContent(
                         RectangleSwitch(
                             scale = Scale.MEDIUM,
                             checked = viewModel.realtimeMode,
-                            onCheckedChange = { viewModel.toggleRealtimeMode() },
+                            onCheckedChange = {
+                                viewModel.toggleRealtimeMode()
+                                viewModel.predict()
+                            },
                         )
                     },
                 )

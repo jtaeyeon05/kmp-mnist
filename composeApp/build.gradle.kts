@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.3.0"
-val releaseCode = 32
+val releaseName = "1.3.1"
+val releaseCode = 33
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")
@@ -149,6 +149,10 @@ kotlin {
     }
 }
 
+dependencies {
+    debugImplementation(libs.compose.uiTooling)
+}
+
 android {
     namespace = "io.github.jtaeyeon05.kmp_mnist"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -174,10 +178,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-}
-
-dependencies {
-    debugImplementation(libs.compose.uiTooling)
 }
 
 compose.desktop {
