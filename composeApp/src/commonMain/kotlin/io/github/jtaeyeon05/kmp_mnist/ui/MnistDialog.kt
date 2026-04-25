@@ -170,6 +170,7 @@ private fun MnistDialogContent(
                             scale = Scale.MEDIUM,
                             checked = viewModel.cellSize == 28,
                             onCheckedChange = {
+                                viewModel.saveCellMap()
                                 viewModel.updateCellSize(if (viewModel.cellSize == 28) 20 else 28)
                                 viewModel.predict()
                             },
@@ -223,7 +224,7 @@ private fun MnistDialogContent(
                                 contentDescription = "GitHub Icon",
                             )
                             Spacer(modifier = Modifier.width(padding.inner(Scale.MEDIUM)))
-                            Text(text = "View")
+                            Text(text = "Repository")
                         }
                     },
                 )
@@ -246,7 +247,7 @@ private fun MnistDialogContent(
                                 contentDescription = "GitHub Icon",
                             )
                             Spacer(modifier = Modifier.width(padding.inner(Scale.MEDIUM)))
-                            Text(text = "View")
+                            Text(text = "Repository")
                         }
                     },
                 )

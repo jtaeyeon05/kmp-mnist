@@ -28,13 +28,13 @@ fun Double.toPrecision(digits: Int): String {
     val factor = 10.0.pow(digits)
     val roundedValue = round(this * factor).toLong()
 
-    return if (digits == 0) {
-        "$roundedValue"
-    } else if (digits > 0) {
+    return if (digits > 0) {
         val fullString = "$roundedValue".padStart(digits + 1, '0')
         "${fullString.dropLast(digits)}.${fullString.takeLast(digits)}"
-    } else {
+    } else if (digits < 0) {
         "${roundedValue * 10.0.pow(-digits).toLong()}"
+    } else {
+        "$roundedValue"
     }
 }
 
@@ -42,7 +42,11 @@ fun Float.toPrecision(digits: Int): String {
     return this.toDouble().toPrecision(digits)
 }
 
-inline fun Modifier.applyIf(condition: Boolean, crossinline block: Modifier.() -> Modifier) = if (condition) this.block() else this
+fun Modifier.applyIf(condition: Boolean, onTrue: Modifier.() -> Modifier, onFalse: (Modifier.() -> Modifier)? = null) = if (condition) {
+    onTrue.invoke(this)
+} else {
+    onFalse?.invoke(this) ?: this
+}
 
 fun Modifier.tappable(onTap: PointerInputScope.(Offset) -> Unit) = this.pointerInput(Unit) {
     detectTapGestures(

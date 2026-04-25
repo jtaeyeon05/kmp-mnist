@@ -13,8 +13,8 @@ plugins {
     alias(libs.plugins.composeHotReload)
 }
 
-val releaseName = "1.3.1"
-val releaseCode = 33
+val releaseName = "1.3.2"
+val releaseCode = 34
 val buildNumber = LocalDateTime.now(ZoneId.of("Asia/Seoul")).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))!!
 val buildInfoPackage = "io.github.jtaeyeon05.kmp_mnist.buildinfo"
 val buildInfoDir = layout.buildDirectory.dir("generated/sources/buildInfo/kotlin")

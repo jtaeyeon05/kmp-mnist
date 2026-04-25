@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -56,7 +55,6 @@ import io.github.jtaeyeon05.kmp_mnist.ui.theme.LocalLayoutConstraints
 import io.github.jtaeyeon05.kmp_mnist.ui.theme.Scale
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -79,8 +77,12 @@ fun MnistScreen(
                     .stylusHoverIcon(PointerIcon.Crosshair)
                     .pointerInput(Unit) {
                         var lastPoint: Pair<Int, Int>? = null
+                        var cellMapSet: Pair<Int, List<List<Float>>>? = null
 
                         detectDragGestures(
+                            onDragStart = {
+                                cellMapSet = viewModel.captureCellMap()
+                            },
                             onDrag = { change, _ ->
                                 val touchPoint = change.position
                                 val paddingPx = padding(Scale.LARGE).toPx() + border(Scale.MEDIUM).toPx()
@@ -109,12 +111,16 @@ fun MnistScreen(
                                 }
                             },
                             onDragCancel = {
-                                lastPoint = null
+                                if (cellMapSet != null) viewModel.saveCellMap(cellMapSet)
                                 if (!viewModel.realtimeMode) viewModel.predict()
+                                lastPoint = null
+                                cellMapSet = null
                             },
                             onDragEnd = {
-                                lastPoint = null
+                                if (cellMapSet != null) viewModel.saveCellMap(cellMapSet)
                                 if (!viewModel.realtimeMode) viewModel.predict()
+                                lastPoint = null
+                                cellMapSet = null
                             },
                         )
                     }
@@ -123,6 +129,7 @@ fun MnistScreen(
                         val x = (viewModel.cellSize * (offset.x - paddingPx)  / (size.width - 2 * paddingPx)).toInt()
                         val y = (viewModel.cellSize * (offset.y - paddingPx) / (size.height - 2 * paddingPx)).toInt()
 
+                        viewModel.saveCellMap()
                         viewModel.draw(x = x, y = y)
                         viewModel.predict()
                     }
@@ -238,43 +245,79 @@ fun MnistScreen(
             Column(
                 modifier = Modifier
                     .padding(padding(Scale.SMALL))
-                    .width(component.height(Scale.LARGE))
                     .align(Alignment.TopStart),
                 verticalArrangement = Arrangement.spacedBy(padding(Scale.SMALL)),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
             ) {
-                RectangleTextButton(
-                    scale = Scale.LARGE,
-                    onClick = { viewModel.toggleBrushMode() },
+                // Toolbar Row 1
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(padding(Scale.SMALL)),
                 ) {
-                    Text(
-                        text = when (viewModel.brushMode) {
-                            BrushMode.PENCIL -> "✎"
-                            BrushMode.SMALL_BRUSH -> "✑"
-                            BrushMode.LARGE_BRUSH -> "✑"
+                    RectangleTextButton(
+                        scale = Scale.LARGE,
+                        onClick = { viewModel.toggleBrushMode() },
+                    ) {
+                        Text(
+                            text = when (viewModel.brushMode) {
+                                BrushMode.PENCIL -> "✎"
+                                BrushMode.SMALL_BRUSH -> "✑"
+                                BrushMode.LARGE_BRUSH -> "✑"
+                                BrushMode.ERASER -> "◧"
+                            },
+                            fontWeight = when (viewModel.brushMode) {
+                                BrushMode.PENCIL -> FontWeight.Normal
+                                BrushMode.SMALL_BRUSH -> FontWeight.Normal
+                                BrushMode.LARGE_BRUSH -> FontWeight.Bold
+                                BrushMode.ERASER -> FontWeight.Bold
+                            },
+                        )
+                    }
+                    RectangleTextButton(
+                        scale = Scale.LARGE,
+                        onClick = {
+                            viewModel.saveCellMap()
+                            viewModel.clear()
+                            viewModel.predict()
                         },
-                        fontWeight = when (viewModel.brushMode) {
-                            BrushMode.PENCIL -> FontWeight.Normal
-                            BrushMode.SMALL_BRUSH -> FontWeight.Normal
-                            BrushMode.LARGE_BRUSH -> FontWeight.Bold
-                        },
-                    )
+                    ) {
+                        Text(text = "❐")
+                    }
                 }
-                RectangleTextButton(
-                    scale = Scale.LARGE,
-                    onClick = {
-                        viewModel.clear()
-                        viewModel.predict()
-                    },
+                // Toolbar Row 2
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(padding(Scale.SMALL)),
                 ) {
-                    Text(text = "⟲")
+                    RectangleTextButton(
+                        scale = Scale.LARGE,
+                        enabled = viewModel.hasPreviousCellMap,
+                        onClick = {
+                            viewModel.undoCellMap()
+                            viewModel.predict()
+                        },
+                    ) {
+                        Text(text = "⟲")
+                    }
+                    RectangleTextButton(
+                        scale = Scale.LARGE,
+                        enabled = viewModel.hasNextCellMap,
+                        onClick = {
+                            viewModel.redoCellMap()
+                            viewModel.predict()
+                        },
+                    ) {
+                        Text(text = "⟳")
+                    }
                 }
+                // Toolbar Row 3
                 RectangleTextButton(
                     scale = Scale.LARGE,
                     onClick = { viewModel.showDialog() },
                 ) {
                     Text(text = "?")
                 }
+                // Toolbar Row 4
                 if (viewModel.isLoading) {
                     LoadingBox(
                         scale = Scale.LARGE,
