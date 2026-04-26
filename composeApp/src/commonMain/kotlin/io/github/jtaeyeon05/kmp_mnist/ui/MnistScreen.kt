@@ -112,13 +112,13 @@ fun MnistScreen(
                             },
                             onDragCancel = {
                                 if (cellMapSet != null) viewModel.saveCellMap(cellMapSet)
-                                if (!viewModel.realtimeMode) viewModel.predict()
+                                viewModel.predict()
                                 lastPoint = null
                                 cellMapSet = null
                             },
                             onDragEnd = {
                                 if (cellMapSet != null) viewModel.saveCellMap(cellMapSet)
-                                if (!viewModel.realtimeMode) viewModel.predict()
+                                viewModel.predict()
                                 lastPoint = null
                                 cellMapSet = null
                             },
